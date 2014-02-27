@@ -2,6 +2,7 @@ package com.middleware.pubsubclient;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 
 import android.os.AsyncTask;
 import android.os.Build;
@@ -11,6 +12,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.View;
@@ -28,12 +31,16 @@ import org.jivesoftware.smackx.pubsub.PubSubManager;
 
 public class RegisterMe extends Activity{
 	
-	public static String userName="";
-	public static String UNIQUE_ID="";
+	//public static String userName="";
+	//public static String UNIQUE_ID="";
+	public String username;
+	public String password;
 	public static final String PREFS_NAME = "Preferences_File";
 	ConnectionConfiguration config;
 	XMPPConnection conn;
 	SharedPreferences chkInstall;
+	SharedPreferences.Editor editPrefs;
+	SensorManager sm;
 			
 	@SuppressLint("ShowToast")
 	@Override
@@ -86,7 +93,8 @@ public class RegisterMe extends Activity{
 		}			
 		
 		
-		chkInstall=getSharedPreferences(PREFS_NAME, 0);
+		chkInstall=getSharedPreferences(PREFS_NAME,0);
+		editPrefs=chkInstall.edit();
 		boolean installing=chkInstall.getBoolean("firstInstall", true);
 		if(installing)
 		{
@@ -106,7 +114,9 @@ public class RegisterMe extends Activity{
 			System.out.println("trying to login");
 			//login using credentials
 			try {
-				conn.login(userName,UNIQUE_ID);
+				username=chkInstall.getString("username", null);
+				password=chkInstall.getString("password", null);
+				conn.login(username	,password);
 				System.out.println("login successful");
 			} catch (XMPPException e) {
 				// TODO Auto-generated catch block
@@ -153,7 +163,15 @@ public class RegisterMe extends Activity{
 					for (Object o : c)
 					    System.out.println(o);
 					*/
-					am.createAccount(userName, UNIQUE_ID);
+					
+					//get the list of all sensors present on the device
+					//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
+					
+					username=chkInstall.getString("username", null);
+					password=chkInstall.getString("password",null);
+					List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
+					System.out.println(sensors.toString());
+					am.createAccount(username, password);
 				}
 				catch(Exception e)
 				{
@@ -161,8 +179,11 @@ public class RegisterMe extends Activity{
 				}
 				}
 			else
+			{
+				//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
+				
 				System.out.println("Server does not support new account creation");
-			
+			}
 			
 			
 		//establishConn ecs=new establishConn();
@@ -172,9 +193,13 @@ public class RegisterMe extends Activity{
 	@SuppressLint("ShowToast")
 	public void createUserName()
 	{		
+		String userName;
+		String UNIQUE_ID;
 		TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE); 
 		UNIQUE_ID=  mngr.getDeviceId();
 		userName=UNIQUE_ID.concat("@serverName");
+		editPrefs.putString("username", userName).commit();
+		editPrefs.putString("password", UNIQUE_ID).commit();
 		System.out.println("username created: "+userName);
 		System.out.println("password is: "+UNIQUE_ID);
 		System.out.println("Proceeding to registeration");	
