@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,14 +27,13 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.DefaultPacketExtension;
 import org.jivesoftware.smackx.pubsub.LeafNode;
 import org.jivesoftware.smackx.pubsub.PubSubManager;
 
 
 public class RegisterMe extends Activity{
 	
-	//public static String userName="";
-	//public static String UNIQUE_ID="";
 	public String username;
 	public String password;
 	public static final String PREFS_NAME = "Preferences_File";
@@ -79,20 +80,29 @@ public class RegisterMe extends Activity{
 		
 		catch (Exception e) {
 				// TODO Auto-generated catch block
+			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
 				e.printStackTrace();
-				Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
+				
 		}
 		
 		//connect to the gmail server
-		try {
+		if(isNetworkAvailable())
+		{
+			try {
+		
 			conn.connect();
 			System.out.println("Connection Established");
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
+			
 			e1.printStackTrace();
-		}			
-		
-		
+		}		
+		}
+		else
+		{
+			System.out.println("No internet Connection");
+		}
+	
 		chkInstall=getSharedPreferences(PREFS_NAME,0);
 		editPrefs=chkInstall.edit();
 		boolean installing=chkInstall.getBoolean("firstInstall", true);
@@ -140,18 +150,30 @@ public class RegisterMe extends Activity{
 		}
 	}
 	
+	private boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    if(activeNetworkInfo != null && activeNetworkInfo.isConnected())
+	    return true;
+	    else
+	    	return false;
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.register_me, menu);
 		return true;
-	}
-	
-	
+	}	
 
 	@SuppressLint("ShowToast")
 	public void registerClient()
 	{			
+		if(isNetworkAvailable() && conn.isConnected())
+		//{
+		//if(conn.isConnected())
+		{
 			AccountManager am=conn.getAccountManager();
 			if(am.supportsAccountCreation())
 				{
@@ -159,18 +181,16 @@ public class RegisterMe extends Activity{
 				try{
 					/*check how many attributes need to be provided for creating a new account
 					 * Collection<String> c=am.getAccountAttributes();
-					
-					for (Object o : c)
+						for (Object o : c)
 					    System.out.println(o);
 					*/
-					
 					//get the list of all sensors present on the device
 					//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
 					
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
-					List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
-					System.out.println(sensors.toString());
+					//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
+					//System.out.println(sensors.toString());
 					am.createAccount(username, password);
 				}
 				catch(Exception e)
@@ -178,13 +198,22 @@ public class RegisterMe extends Activity{
 					e.printStackTrace();
 				}
 				}
+		
 			else
 			{
 				//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
 				
 				System.out.println("Server does not support new account creation");
 			}
-			
+		}
+		else
+			System.out.println("not connected to the server");
+		/*}
+		else
+		{
+			System.out.println("Can't register...no internet connection");
+		}*/
+		
 			
 		//establishConn ecs=new establishConn();
 		//ecs.doInBackground();
@@ -204,6 +233,12 @@ public class RegisterMe extends Activity{
 		System.out.println("password is: "+UNIQUE_ID);
 		System.out.println("Proceeding to registeration");	
 		//SharedPreferences.Editor = 
+	}
+	
+	public void classFromXML(View v)
+	{
+		DefaultPacketExtension dpf=new DefaultPacketExtension("queryFormat", "http://justtrying.com");
+		System.out.println("Element name is "+ dpf.getElementName());		
 	}
 
 }
