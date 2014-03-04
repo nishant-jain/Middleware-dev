@@ -8,12 +8,31 @@
     <string name="sensors">Sensor Data Required:</string>
     <string name="from">From:</string>
     <string name="to">To:</string>
-    <string name="expiryTime">Expiry Time:</string>
-    <string name="location">Location:</string>
-    <string name="radius">Radius (in metres):</string>
-    <string name="activity">Activity:</string>
-    <string name="frequency">Frequency:</string>
-    <string name="noDevices">Device Count:</string>
+    <string name="expiry">Before:</string>
+    <string name="loc">Location:</string>
+    <string name="rad">Radius:</string>
+    <string name="count">Device Count</string>
     <string name="publish">Publish Query</string>
+    <string name="acc">Accelerometer</string>
+    <string name="gyro">Gyroscope</string>
+    <string name="gps">GPS</string>
+    <string name="rot">Rotation Vector</string>
+    <string-array name="activity_options">
+        <item>Don\'t Care</item>
+        <item>On Foot</item>
+        <item>In Vehicle</item>
+        <item>On Bicycle</item>
+    </string-array>
+    <string-array name="frequency_options">
+        <item>Normal</item>
+        <item>UI</item>
+        <item>Fastest</item>
+        <item>Game</item>
+    </string-array>
+     <string-array name="device_count">
+        <item>Range</item>
+        <item>Exact</item>
+     
+    </string-array>
 
 </resources>
