@@ -1,35 +1,33 @@
 package com.middleware.pubsubclient;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.StrictMode;
+import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
+import org.jivesoftware.smack.XMPPConnection;
+import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.DefaultPacketExtension;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.StrictMode;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
-
-import org.jivesoftware.smack.AccountManager;
-import org.jivesoftware.smack.Connection;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.DefaultPacketExtension;
-import org.jivesoftware.smackx.pubsub.LeafNode;
-import org.jivesoftware.smackx.pubsub.PubSubManager;
 
 
 public class RegisterMe extends Activity{
@@ -42,13 +40,18 @@ public class RegisterMe extends Activity{
 	SharedPreferences chkInstall;
 	SharedPreferences.Editor editPrefs;
 	SensorManager sm;
-			
+	//TextView tv;
+	List<Sensor> deviceSensors;
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register_me);
-		
+//		tv = (TextView)findViewById(R.id.textView1);
+//		tv.setText("List of sensors in this phone:\n");
+		sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		deviceSensors = sm.getSensorList(Sensor.TYPE_ALL);
+		//tv.append(deviceSensors.toString());
 		//Establish connection with the XMPP server: Network tasks take place in background so either implement using AsyncTask or change the thread policy
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
@@ -185,13 +188,13 @@ public class RegisterMe extends Activity{
 					    System.out.println(o);
 					*/
 					//get the list of all sensors present on the device
-					//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
+					
 					
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
-					//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
-					//System.out.println(sensors.toString());
-					am.createAccount(username, password);
+					Map<String, String> attributes = new HashMap<String, String>();
+					attributes.put("sensorInfo", deviceSensors.toString());
+					am.createAccount(username, password, attributes);
 				}
 				catch(Exception e)
 				{

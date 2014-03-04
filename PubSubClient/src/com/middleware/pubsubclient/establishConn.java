@@ -9,7 +9,7 @@ import org.jivesoftware.smack.XMPPException;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class establishConn extends AsyncTask<Void, Void, Void> {
+public class EstablishConn extends AsyncTask<Void, Void, Void> {
 
 	@Override
 	protected Void doInBackground(Void... v) {
