@@ -2,6 +2,7 @@ package com.middleware.pubsubclient;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +15,11 @@ import org.jivesoftware.smack.packet.DefaultPacketExtension;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -37,22 +42,25 @@ public class RegisterMe extends Activity{
 	public static final String PREFS_NAME = "Preferences_File";
 	ConnectionConfiguration config;
 	XMPPConnection conn;
+	
 	SharedPreferences chkInstall;
 	SharedPreferences.Editor editPrefs;
 	SensorManager sm;
 	//TextView tv;
 	List<Sensor> deviceSensors;
+	AlertDialog.Builder showDialog;
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register_me);
+		showDialog=new Builder(this);
 //		tv = (TextView)findViewById(R.id.textView1);
 //		tv.setText("List of sensors in this phone:\n");
 		sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		deviceSensors = sm.getSensorList(Sensor.TYPE_ALL);
 		//tv.append(deviceSensors.toString());
-		//Establish connection with the XMPP server: Network tasks take place in background so either implement using AsyncTask or change the thread policy
+		
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 						
@@ -62,7 +70,6 @@ public class RegisterMe extends Activity{
 		conn=new XMPPConnection(config);
 								
 		try {
-				//since android does not support BKS security implementation after icecream sandwich, change it if higher version
 				config.setSASLAuthenticationEnabled(true);
 				config.setCompressionEnabled(true);
 				config.setSecurityMode(SecurityMode.enabled);
@@ -83,22 +90,19 @@ public class RegisterMe extends Activity{
 		
 		catch (Exception e) {
 				// TODO Auto-generated catch block
-			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG);
 				e.printStackTrace();
 				
 		}
 		
-		//connect to the gmail server
+		
 		if(isNetworkAvailable())
 		{
-			try {
-		
+			try {		
 			conn.connect();
 			System.out.println("Connection Established");
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
-			
-			e1.printStackTrace();
+				e1.printStackTrace();
 		}		
 		}
 		else
@@ -109,23 +113,19 @@ public class RegisterMe extends Activity{
 		chkInstall=getSharedPreferences(PREFS_NAME,0);
 		editPrefs=chkInstall.edit();
 		boolean installing=chkInstall.getBoolean("firstInstall", true);
-		if(installing)
-		{
-			System.out.println("installing application");
-			//if it is a first time installation, then the user nneds to register with the server
-			createUserName();		//userName and password generated
-			registerClient();		//registering client when the apk is installed
+		
+		if(installing )
+		{			
+			System.out.println("installing application");			
+			createUserName();		
+			registerClient();		
 		}
+		
 		else
 		{
-			//else the user simply logins with his credentials and he does not need to remember the details.
-			//The details will be saved in the form of shared preferences.
-			
-			//apk already installed
-			//establish connection
-			
+			if(conn.isConnected())
+			{
 			System.out.println("trying to login");
-			//login using credentials
 			try {
 				username=chkInstall.getString("username", null);
 				password=chkInstall.getString("password", null);
@@ -135,20 +135,9 @@ public class RegisterMe extends Activity{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			
-			//TODO code to subscribe to certain topics and publish queries
-			//how to create a subscription node with the pubsub service with required configurations
-			//still working on this part
-			/*
-			PubSubManager psm=new PubSubManager(conn);
-			try {
-				LeafNode ln=psm.getNode("id of the node in the server");
-			} catch (XMPPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
-			*/
+			else
+				System.out.println("Not connected to the server");
 			
 		}
 	}
@@ -170,12 +159,11 @@ public class RegisterMe extends Activity{
 		return true;
 	}	
 
+	
 	@SuppressLint("ShowToast")
 	public void registerClient()
 	{			
 		if(isNetworkAvailable() && conn.isConnected())
-		//{
-		//if(conn.isConnected())
 		{
 			AccountManager am=conn.getAccountManager();
 			if(am.supportsAccountCreation())
@@ -187,14 +175,23 @@ public class RegisterMe extends Activity{
 						for (Object o : c)
 					    System.out.println(o);
 					*/
-					//get the list of all sensors present on the device
-					
-					
+					StringBuilder sensorList = new StringBuilder();
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
+					
+					for(Sensor s : deviceSensors)
+					{
+						sensorList.append(s.getName()+"\n");	
+					}					
+					
 					Map<String, String> attributes = new HashMap<String, String>();
-					attributes.put("sensorInfo", deviceSensors.toString());
+					attributes.put("sensorInfo", sensorList.toString());
+					System.out.println(sensorList.toString());
 					am.createAccount(username, password, attributes);
+					showDialog.setMessage("registered with the server")
+					.create()
+					.show();
+					
 				}
 				catch(Exception e)
 				{
@@ -204,27 +201,36 @@ public class RegisterMe extends Activity{
 		
 			else
 			{
-				//List<Sensor> sensors=sm.getSensorList(Sensor.TYPE_ALL);
-				
 				System.out.println("Server does not support new account creation");
+				showDialog.setMessage("Account cannot be created on the server")
+				.create()
+				.show();
+			
+		    	/*StringBuilder sensorList = new StringBuilder();
+				for(Sensor s : deviceSensors)
+				{
+					sensorList.append(s.getName()+"\n");	
+				}	
+				Toast.makeText(getApplicationContext(), sensorList, Toast.LENGTH_LONG);
+				System.out.println(sensorList);
+				System.out.println(sensorList.toString());
+				*/
 			}
 		}
 		else
+			{
 			System.out.println("not connected to the server");
-		/*}
-		else
-		{
-			System.out.println("Can't register...no internet connection");
-		}*/
-		
-			
-		//establishConn ecs=new establishConn();
-		//ecs.doInBackground();
+			showDialog.setMessage("Not connected to the internet")
+			.create()
+			.show();
+			}
+	
 	}
 	
 	@SuppressLint("ShowToast")
 	public void createUserName()
 	{		
+		
 		String userName;
 		String UNIQUE_ID;
 		TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE); 
@@ -234,14 +240,16 @@ public class RegisterMe extends Activity{
 		editPrefs.putString("password", UNIQUE_ID).commit();
 		System.out.println("username created: "+userName);
 		System.out.println("password is: "+UNIQUE_ID);
-		System.out.println("Proceeding to registeration");	
-		//SharedPreferences.Editor = 
+		System.out.println("Proceeding to registeration");
+		showDialog
+			.setTitle("Installating app...")
+			.setMessage("Username and password created");
+			
 	}
 	
-	public void classFromXML(View v)
+	public void launchIntent(View v)
 	{
-		DefaultPacketExtension dpf=new DefaultPacketExtension("queryFormat", "http://justtrying.com");
-		System.out.println("Element name is "+ dpf.getElementName());		
+		Intent i=new Intent(getApplicationContext(),PublishQuery.class);		
+		startActivity(i);
 	}
-
 }
