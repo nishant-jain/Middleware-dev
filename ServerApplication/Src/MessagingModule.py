@@ -4,7 +4,8 @@ Created on 11-Mar-2014
 @author: nishant
 '''
 import logging
-
+import RegistrationModule
+import QueryHandlerModule
 from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
@@ -49,7 +50,11 @@ class EchoBot(ClientXMPP):
     def message(self, msg):
         if msg['type'] in ('chat', 'normal'):
             #print "Message received",msg
-            msg.reply("Thanks for sending,\n%(body)s" % msg).send()
+            if(msg['type']=='chat'):  #using msg type "chat" to symbolise queries
+                QueryHandlerModule.queryparse(msg)
+            else:
+                RegistrationModule.registerUser(msg)  #using msg type "normal" to symbolise registration for capabilities
+            msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
             
 
 
@@ -62,8 +67,10 @@ if __name__ == '__main__':
     print "hello"    
     xmpp = EchoBot('nishant@localhost', '1234') #Need to create a real username/pwd for the server and host a jabber server
     xmpp.connect()
+    
     #print "hi"
     #xmpp.send_message(mto="new_nishant@localhost", mbody="hello1234",mtype="chat")
     xmpp.process(block=True)    
      
-    
+
+   
