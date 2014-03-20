@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+ 
+    <PreferenceCategory android:title="@string/pref_user_profile" >
+       
+        <MultiSelectListPreference android:key="sensorList"
+                android:title="Update Subscription Topics"
+                android:summary="Click to select sensors">
+        </MultiSelectListPreference>    
+            
+    </PreferenceCategory>
+       
+</PreferenceScreen>
+       

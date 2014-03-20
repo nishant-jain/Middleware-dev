@@ -62,6 +62,7 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="18"
             android:ems="10"
+            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -72,7 +73,9 @@
             android:layout_gravity="right|top"
             android:layout_row="18"
             android:ems="10"
-            android:inputType="time" >
+            android:hint="HH:mm:ss"
+            android:inputType="text" >
+
         </EditText>
 
         <EditText
@@ -83,6 +86,7 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="21"
             android:ems="10"
+            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -93,7 +97,8 @@
             android:layout_gravity="right|top"
             android:layout_row="21"
             android:ems="10"
-            android:inputType="time" />
+            android:hint="HH:mm:ss"
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/EditText03"
@@ -103,6 +108,7 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="24"
             android:ems="10"
+            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -113,7 +119,8 @@
             android:layout_gravity="right|top"
             android:layout_row="24"
             android:ems="10"
-            android:inputType="time" />
+            android:hint="HH:mm:ss"
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/editText3"
@@ -263,7 +270,7 @@
             android:layout_gravity="left"
             android:text="@string/rot"
             android:textSize="13sp" />
-
+<requestFocus />
         <CheckBox
             android:id="@+id/CheckBox01"
             android:layout_width="114dp"
@@ -331,7 +338,8 @@
             android:ems="10"
             android:gravity="center"
             android:hint="Min"
-            android:inputType="number" />
+            android:inputType="number"
+            android:text="1" />
 
         <EditText
             android:id="@+id/EditText06"
@@ -342,9 +350,9 @@
             android:ems="10"
             android:gravity="center"
             android:hint="Max"
-            android:inputType="number" >
-
-            <requestFocus />
+            android:inputType="number"
+            android:text="1" >
+            
         </EditText>
 
         <View

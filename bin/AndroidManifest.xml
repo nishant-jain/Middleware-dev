@@ -33,10 +33,15 @@
        <activity
             android:name="com.middleware.pubsubclient.PublishQuery"
             android:label="@string/publish" 
-            android:icon="@drawable/publish">
-                
+            android:icon="@drawable/publish">          
          
         </activity> 
+        
+       <activity
+           android:name="com.middleware.pubsubclient.SubscribeTopics"
+           android:label="Subscription Settings">
+           
+       </activity>
        
     </application>
 

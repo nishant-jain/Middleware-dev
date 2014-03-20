@@ -7,11 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.DefaultPacketExtension;
+import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -30,6 +34,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,23 +42,26 @@ import android.widget.Toast;
 
 public class RegisterMe extends Activity{
 	
-	public String username;
+	public static String username;
 	public String password;
 	public static final String PREFS_NAME = "Preferences_File";
 	ConnectionConfiguration config;
-	XMPPConnection conn;
+	public static XMPPConnection conn;
 	
 	SharedPreferences chkInstall;
 	SharedPreferences.Editor editPrefs;
 	SensorManager sm;
 	//TextView tv;
-	List<Sensor> deviceSensors;
+	public static List<Sensor> deviceSensors;
 	AlertDialog.Builder showDialog;
+	Message loginWithServer;
+	
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register_me);
+		XMPPConnection.DEBUG_ENABLED=true;
 		showDialog=new Builder(this);
 //		tv = (TextView)findViewById(R.id.textView1);
 //		tv.setText("List of sensors in this phone:\n");
@@ -66,8 +74,10 @@ public class RegisterMe extends Activity{
 						
 		System.out.println("Establishing connection with gtalk server");
 		config=new ConnectionConfiguration("talk.google.com",5222,"gmail.com");
+		config.setDebuggerEnabled(true);
 		//config=new ConnectionConfiguration("jabber.org",5222);
 		conn=new XMPPConnection(config);
+		
 								
 		try {
 				config.setSASLAuthenticationEnabled(true);
@@ -114,7 +124,7 @@ public class RegisterMe extends Activity{
 		editPrefs=chkInstall.edit();
 		boolean installing=chkInstall.getBoolean("firstInstall", true);
 		
-		if(installing )
+		if(installing)
 		{			
 			System.out.println("installing application");			
 			createUserName();		
@@ -157,8 +167,23 @@ public class RegisterMe extends Activity{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.register_me, menu);
 		return true;
+		 
 	}	
 
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		super.onOptionsItemSelected(item);
+		
+		switch(item.getItemId())
+		{
+        case R.id.subscription:
+            Intent i=new Intent(getApplicationContext(),SubscribeTopics.class);
+            startActivity(i);
+            break;
+		}
+		return false;
+		
+	}
 	
 	@SuppressLint("ShowToast")
 	public void registerClient()
@@ -178,20 +203,37 @@ public class RegisterMe extends Activity{
 					StringBuilder sensorList = new StringBuilder();
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
-					
+					/*
 					for(Sensor s : deviceSensors)
 					{
 						sensorList.append(s.getName()+"\n");	
 					}					
-					
+					*/
 					Map<String, String> attributes = new HashMap<String, String>();
-					attributes.put("sensorInfo", sensorList.toString());
-					System.out.println(sensorList.toString());
-					am.createAccount(username, password, attributes);
-					showDialog.setMessage("registered with the server")
+					//attributes.put("sensorInfo", sensorList.toString());   //to send only sensor names
+					attributes.put("sensorInfo", deviceSensors.toString());
+					//System.out.println(sensorList.toString());
+					//am.createAccount(username, password, attributes);
+					am.createAccount(username, password);		//creates an account with the XMPP server
+					showDialog.setMessage("registered with the XMPP server")
 					.create()
 					.show();
 					
+					
+					//IQ packets of type SET are used to set new values at the server and ensures a response 
+					IQ test = null;
+					test.setType(IQ.Type.SET);
+					test.setFrom(username);
+					test.setProperty("sensors",deviceSensors.toString());
+					conn.sendPacket(test);
+					
+					//a normal message can be sent to the server but will create a problem with receiving acknowledgments 
+					/*loginWithServer=new Message("JID of the server",Message.Type.normal);
+					loginWithServer.setFrom(username);
+					loginWithServer.setSubject("Sensor Capabilities");
+					loginWithServer.setBody(deviceSensors.toString());
+					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
+					*/
 				}
 				catch(Exception e)
 				{
@@ -204,17 +246,7 @@ public class RegisterMe extends Activity{
 				System.out.println("Server does not support new account creation");
 				showDialog.setMessage("Account cannot be created on the server")
 				.create()
-				.show();
-			
-		    	/*StringBuilder sensorList = new StringBuilder();
-				for(Sensor s : deviceSensors)
-				{
-					sensorList.append(s.getName()+"\n");	
-				}	
-				Toast.makeText(getApplicationContext(), sensorList, Toast.LENGTH_LONG);
-				System.out.println(sensorList);
-				System.out.println(sensorList.toString());
-				*/
+				.show();						
 			}
 		}
 		else
@@ -230,7 +262,6 @@ public class RegisterMe extends Activity{
 	@SuppressLint("ShowToast")
 	public void createUserName()
 	{		
-		
 		String userName;
 		String UNIQUE_ID;
 		TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE); 
