@@ -4,8 +4,8 @@ Created on 11-Mar-2014
 @author: nishant
 '''
 import logging
-import RegistrationModule
 import QueryHandlerModule
+import RegistrationModule
 from sleekxmpp import ClientXMPP
 from sleekxmpp.exceptions import IqError, IqTimeout
 
