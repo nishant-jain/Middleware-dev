@@ -17,28 +17,3 @@ def deRegisterUser(userID): #(long userID):
             Remember to deregister from the jabber server as well apart from this. 
         '''
     return
-
-
-import peewee
-from peewee import *
-
-mysql_db = MySQLDatabase('my_database', user='code')
-
-
-class MySQLModel(Model):
-    """A base model that will use our MySQL database"""
-    class Meta:
-        database = mysql_db
-
-class User(MySQLModel):
-    username = CharField()
-    topicsSubscribedTo = TextField()
-    queriedFor =  TextField()
-    sensorsPresent = TextField()
-
-mysql_db.connect() 
-
-
-#mysql_db.create_table();
-#new_entry = MySQLModel()
-#new_entry.save() 

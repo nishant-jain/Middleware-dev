@@ -4,13 +4,12 @@ Created on 11-Mar-2014
 @author: nishant
 '''
 import logging
-import RegistrationModule
 import QueryHandlerModule
+import RegistrationModule
 from sleekxmpp import ClientXMPP
-from sleekxmpp.exceptions import IqError, IqTimeout
 
 
-class EchoBot(ClientXMPP):
+class MessageHandler(ClientXMPP):
 
     def __init__(self, jid, password):
         ClientXMPP.__init__(self, jid, password)
@@ -65,12 +64,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)-8s %(message)s')
     print "hello"    
-    xmpp = EchoBot('nishant@localhost', '1234') #Need to create a real username/pwd for the server and host a jabber server
+    xmpp = MessageHandler('admin@localhost', 'kshitiz') #Should keep a centralized username and password. 
     xmpp.connect()
     
     #print "hi"
     #xmpp.send_message(mto="new_nishant@localhost", mbody="hello1234",mtype="chat")
     xmpp.process(block=True)    
-     
-
-   

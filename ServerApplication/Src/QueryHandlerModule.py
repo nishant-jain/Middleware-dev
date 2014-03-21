@@ -3,38 +3,6 @@ Created on 11-Mar-2014
 
 @author: nishant
 '''
-import peewee
-from peewee import *
-
-mysql_db = MySQLDatabase('my_database', user='code') #add database name, usrname, password
-
-
-class MySQLModel(Model):
-    """A base model that will use our MySQL database"""
-    class Meta:
-        database = mysql_db
-
-class Query(MySQLModel):
-    username = CharField()
-    queryNo= FloatField()
-    dataReqd= TextField()
-    frequency= IntegerField()
-    Activity= TextField()
-    Latitude= DoubleField()
-    Longitude= DoubleField()
-    fromTime= TimeField()
-    toTime= TimeField()
-    expiryTime= TimeField()
-    countMin= IntegerField()
-    countMax= IntegerField()
-    countReceived= IntegerField()
-
-
-mysql_db.connect()
-#Query.create_table();
-#new_entry = User()
-#new_entry.save() 
-
 
 def queryparse(msg): #parse queries
     print msg['body']
