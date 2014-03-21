@@ -18,42 +18,6 @@
             android:text="@string/sensors"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/TextView04"
-            android:layout_column="0"
-            android:layout_gravity="left|top"
-            android:layout_margin="2dp"
-            android:layout_row="26"
-            android:text="@string/loc"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/TextView03"
-            android:layout_column="0"
-            android:layout_gravity="left|top"
-            android:layout_margin="2dp"
-            android:layout_row="24"
-            android:text="@string/expiry"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/TextView02"
-            android:layout_column="0"
-            android:layout_gravity="left|top"
-            android:layout_margin="2dp"
-            android:layout_row="21"
-            android:text="@string/to"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/TextView01"
-            android:layout_column="0"
-            android:layout_gravity="left|top"
-            android:layout_margin="2dp"
-            android:layout_row="18"
-            android:text="@string/from"
-            android:textStyle="bold" />
-
         <EditText
             android:id="@+id/editText1"
             android:layout_width="105dp"
@@ -62,7 +26,6 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="18"
             android:ems="10"
-            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -73,9 +36,7 @@
             android:layout_gravity="right|top"
             android:layout_row="18"
             android:ems="10"
-            android:hint="HH:mm:ss"
-            android:inputType="text" >
-
+            android:inputType="time" >
         </EditText>
 
         <EditText
@@ -86,7 +47,6 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="21"
             android:ems="10"
-            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -97,8 +57,7 @@
             android:layout_gravity="right|top"
             android:layout_row="21"
             android:ems="10"
-            android:hint="HH:mm:ss"
-            android:inputType="text" />
+            android:inputType="time" />
 
         <EditText
             android:id="@+id/EditText03"
@@ -108,7 +67,6 @@
             android:layout_gravity="center_horizontal|top"
             android:layout_row="24"
             android:ems="10"
-            android:hint="dd-MM-yyyy"
             android:inputType="date" />
 
         <EditText
@@ -119,8 +77,7 @@
             android:layout_gravity="right|top"
             android:layout_row="24"
             android:ems="10"
-            android:hint="HH:mm:ss"
-            android:inputType="text" />
+            android:inputType="time" />
 
         <EditText
             android:id="@+id/editText3"
@@ -165,30 +122,22 @@
             android:text="OR" />
 
         <TextView
-            android:id="@+id/TextView06"
-            android:layout_gravity="left"
-            android:layout_margin="2dp"
-            android:text="@string/rad"
-            android:gravity="center"
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/TextView05"
             android:layout_column="0"
             android:layout_gravity="left|top"
             android:layout_margin="2dp"
-            android:layout_row="32"
+            android:layout_row="33"
             android:text="Doing Activity"
             android:textStyle="bold" />
 
-     <android.support.v7.widget.Space android:id="@+id/space7" /> 
+        <android.support.v7.widget.Space android:id="@+id/space7" />
 
         <Spinner
             android:id="@+id/spinner1"
             android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="left|top"
-            android:layout_row="35"
+            android:layout_row="36"
             android:entries="@array/activity_options" />
 
         <TextView
@@ -197,7 +146,7 @@
             android:layout_column="0"
             android:layout_gravity="center_horizontal|top"
             android:layout_margin="2dp"
-            android:layout_row="32"
+            android:layout_row="33"
             android:text="Sensor Delay"
             android:textStyle="bold" />
 
@@ -207,16 +156,16 @@
             android:layout_column="0"
             android:layout_gravity="right|top"
             android:layout_margin="2dp"
-            android:layout_row="32"
+            android:layout_row="33"
             android:text="GPS min delay"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/editText7"
-            android:layout_width="122dp"
+            android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="right|center_vertical"
-            android:layout_row="35"
+            android:layout_row="36"
             android:ems="10"
             android:gravity="center"
             android:hint="in seconds"
@@ -227,7 +176,7 @@
             android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="center_horizontal|top"
-            android:layout_row="35"
+            android:layout_row="36"
             android:entries="@array/frequency_options" />
 
         <android.support.v7.widget.Space
@@ -235,7 +184,7 @@
             android:layout_height="20dp"
             android:layout_column="0"
             android:layout_gravity="left|top"
-            android:layout_row="49" />
+            android:layout_row="50" />
 
         <Button
             android:id="@+id/button1"
@@ -243,17 +192,15 @@
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:layout_gravity="center_horizontal|top"
-            android:layout_row="52"
-            android:background="#D3D3D3"
-            android:text="@string/publish" 
-            android:onClick="sendQuery"/>
+            android:layout_row="53"
+            android:text="@string/publish" />
 
         <TextView
             android:id="@+id/TextView08"
             android:layout_column="0"
             android:layout_gravity="left|center_vertical"
             android:layout_margin="2dp"
-            android:layout_row="38"
+            android:layout_row="39"
             android:text="@string/count"
             android:textStyle="bold" />
 
@@ -270,7 +217,7 @@
             android:layout_gravity="left"
             android:text="@string/rot"
             android:textSize="13sp" />
-<requestFocus />
+
         <CheckBox
             android:id="@+id/CheckBox01"
             android:layout_width="114dp"
@@ -310,7 +257,7 @@
             android:layout_height="1dp"
             android:layout_column="0"
             android:layout_gravity="left|top"
-            android:layout_row="37"
+            android:layout_row="38"
             android:background="#80000000" />
 
         <View
@@ -318,7 +265,7 @@
             android:layout_height="1dp"
             android:layout_column="0"
             android:layout_gravity="left|top"
-            android:layout_row="31"
+            android:layout_row="32"
             android:background="#80000000" />
 
         <Spinner
@@ -326,7 +273,7 @@
             android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="left|top"
-            android:layout_row="39"
+            android:layout_row="40"
             android:entries="@array/device_count" />
 
         <EditText
@@ -334,25 +281,24 @@
             android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="center"
-            android:layout_row="39"
+            android:layout_row="40"
             android:ems="10"
             android:gravity="center"
             android:hint="Min"
-            android:inputType="number"
-            android:text="1" />
+            android:inputType="number" />
 
         <EditText
             android:id="@+id/EditText06"
             android:layout_width="105dp"
             android:layout_column="0"
             android:layout_gravity="right|center_vertical"
-            android:layout_row="39"
+            android:layout_row="40"
             android:ems="10"
             android:gravity="center"
             android:hint="Max"
-            android:inputType="number"
-            android:text="1" >
-            
+            android:inputType="number" >
+
+            <requestFocus />
         </EditText>
 
         <View
@@ -367,11 +313,75 @@
             android:layout_height="wrap_content"
             android:layout_column="0"
             android:layout_gravity="center_horizontal|top"
-            android:layout_row="29"
+            android:layout_row="31"
             android:ems="10"
-             android:gravity="center"
+            android:gravity="center"
             android:hint="in metres"
             android:inputType="numberDecimal" />
+
+        <Button
+            android:id="@+id/button2"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="169dp"
+            android:layout_height="40dp"
+            android:layout_column="0"
+            android:layout_gravity="right|top"
+            android:layout_row="29"
+            android:text="Get Current Location" />
+
+        <TextView
+            android:id="@+id/TextView10"
+            android:layout_width="100dp"
+            android:layout_column="0"
+            android:layout_gravity="center"
+            android:layout_row="29"
+            android:text="OR" />
+
+        <TextView
+            android:id="@+id/TextView04"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_margin="2dp"
+            android:layout_row="26"
+            android:text="@string/loc"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/TextView06"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_margin="2dp"
+            android:layout_row="31"
+            android:gravity="center"
+            android:text="@string/rad"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/TextView03"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_margin="2dp"
+            android:layout_row="24"
+            android:text="@string/expiry"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/TextView02"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_margin="2dp"
+            android:layout_row="21"
+            android:text="@string/to"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/TextView01"
+            android:layout_column="0"
+            android:layout_gravity="left|center_vertical"
+            android:layout_margin="2dp"
+            android:layout_row="18"
+            android:text="@string/from"
+            android:textStyle="bold" />
 
     </GridLayout>
 

@@ -2,27 +2,22 @@ package com.middleware.pubsubclient;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.jivesoftware.smack.AccountManager;
-import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.DefaultPacketExtension;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
@@ -36,8 +31,6 @@ import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 public class RegisterMe extends Activity{
@@ -73,7 +66,7 @@ public class RegisterMe extends Activity{
 		StrictMode.setThreadPolicy(policy);
 						
 		System.out.println("Establishing connection with gtalk server");
-		config=new ConnectionConfiguration("talk.google.com",5222,"gmail.com");
+		config=new ConnectionConfiguration("server@103.25.231.31",5222, "103.25.231.23");
 		config.setDebuggerEnabled(true);
 		//config=new ConnectionConfiguration("jabber.org",5222);
 		conn=new XMPPConnection(config);
@@ -252,7 +245,7 @@ public class RegisterMe extends Activity{
 		else
 			{
 			System.out.println("not connected to the server");
-			showDialog.setMessage("Not connected to the internet")
+			showDialog.setMessage("Not connected to the server")
 			.create()
 			.show();
 			}
