@@ -5,6 +5,7 @@ Created on 11-Mar-2014
 '''
 import threading
 import json
+from Models import Query
 
 class QueryProcessor(threading.Thread):
     def __init__(self, qMessage):
@@ -15,14 +16,36 @@ class QueryProcessor(threading.Thread):
     ''' This is the method that runs on starting this thread. '''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
+        self.storeQueryInDB(self.queryObject)
         
-    def fetchParameters(self, JSONquery):
+    def storeQueryInDB(self, qObj):
         ''' To do:
         Parse parameters of query from the received msg and store it in DB
-        returns an object of Query class containing attribute values specified in the JSON query message. 
         '''
+        q = Query()
+        q.username = qObj['username']
+        q.queryNo = eval(qObj['queryNo'])
+        q.dataReqd = qObj['dataReqd']
+        q.frequency = eval(qObj['frequency'])
+        q.Latitude = eval(qObj['latitude'])
+        q.Longitude = eval(qObj['longitude'])
+#         q.fromtime = qObj['fromTime']
+#         q.toTime = qObj['toTime']
+#         q.expiryTime = qObj['expiryTime']
+        q.countMin = eval(qObj['countMin'])
+        q.countMax = eval(qObj['countMax'])
+        q.countReceved = 0
+        
+        q.save()    
             
         return 
+    
+    def queryPossible(self):
+        '''Check from the database if we even have the requested number of devices to service the query.'''
+        #if found return True
+        #To Write a SELECT query when DB Schema finalized.
+        
+        return False
     
     def lookup(self, query):
         ''' To do:
