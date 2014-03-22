@@ -47,13 +47,18 @@ class MessageHandler(ClientXMPP):
         #     self.disconnect()
 
     def message(self, msg):
+        msg['from'] = str(msg['from']).split("/")[0] #To remove the long numbers from the end of from field
         if msg['type'] in ('chat', 'normal'):
             #print "Message received",msg
             if(msg['type']=='chat'):  #using msg type "chat" to symbolise queries
-                QueryHandlerModule.queryparse(msg)
+                QueryHandlerModule.queryparse(self,msg)
             else:
-                RegistrationModule.processRegistrationMessage(msg)  #using msg type "normal" to symbolise registration for capabilities
-            msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
+                RegistrationModule.processRegistrationMessage(self, msg)  #using msg type "normal" to symbolise registration for capabilities
+            ''' Temporary Ack Mechanism '''
+            msg['to'] = msg['from'] 
+            msg['from'] = "server@localhost"
+            msg['body'] = "Thanks!"
+            msg.send()  # can be converted to ack, although need to see if those are necessary
             
 
 
@@ -64,9 +69,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)-8s %(message)s')
     print "hello"    
-    xmpp = MessageHandler('admin@localhost', 'kshitiz') #Should keep a centralized username and password. 
+    xmpp = MessageHandler('server@localhost', '1234') #Should keep a centralized username and password. 
     xmpp.connect()
     
     #print "hi"
     #xmpp.send_message(mto="new_nishant@localhost", mbody="hello1234",mtype="chat")
-    xmpp.process(block=True)    
+    xmpp.process(block=False)    

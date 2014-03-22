@@ -8,8 +8,9 @@ import threading
 
 class RegistrationProcessor(threading.Thread):
     
-    def __init__(self, rMessage):
+    def __init__(self, msgHandler, rMessage):
         self.rMessage = rMessage
+        self.msgHandler = msgHandler
         
         
         '''This is the method called when this thread is started.'''
@@ -38,6 +39,6 @@ class RegistrationProcessor(threading.Thread):
             '''
         return
     
-def processRegistrationMessage(rMessage):
-    processor = RegistrationProcessor(rMessage)
+def processRegistrationMessage(msgHandler, rMessage):
+    processor = RegistrationProcessor(msgHandler, rMessage)
     processor.start()

@@ -8,10 +8,11 @@ import json
 from Models import Query
 
 class QueryProcessor(threading.Thread):
-    def __init__(self, qMessage):
+    def __init__(self, msgHandler, qMessage):
         super(QueryProcessor, self).__init__()
         self.qMessage = qMessage
         self.queryObject = ""
+        self.msgHandler = msgHandler
         
     ''' This is the method that runs on starting this thread. '''
     def run(self):
@@ -37,6 +38,13 @@ class QueryProcessor(threading.Thread):
         q.countReceved = 0
         
         q.save()    
+           
+        if(self.queryPossible()):
+            self.sendAcknowledgement(True)
+        else:
+            self.sendAcknowledgement(False)
+            
+            
             
         return 
     
@@ -54,11 +62,16 @@ class QueryProcessor(threading.Thread):
         '''
         return 
     
-    def sendAcknowledgement(self): 
-        ''' To do:
-        sends an acknowledgement to the publisher stating that the query has been received
-         and he will be notified when sufficient subscribers will provide the information.
-        '''
+    def sendAcknowledgement(self, accepted=True, errMessage=""): 
+        toSend = '{"queryAck":'
+        if(accepted):
+            toSend = toSend + '"accepted"'
+        else:
+            toSend = toSend + '"denied"'
+            
+        toSend = toSend + ', "errMessage": "' + errMessage + '"}'
+        self.msgHandler.send_message(self.qMessage['from'], toSend)
+        
         return 
     
     def sendConfirmation(self):
@@ -69,8 +82,8 @@ class QueryProcessor(threading.Thread):
         
 
 
-def queryparse(msg): #parse queries
+def queryparse(msgHandler, msg): #parse queries
     #print msg['body']
-    processor = QueryProcessor(msg)
+    processor = QueryProcessor(msgHandler, msg)
     processor.start()
 
