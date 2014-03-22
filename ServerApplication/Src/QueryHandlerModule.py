@@ -53,7 +53,7 @@ class QueryProcessor(threading.Thread):
         #if found return True
         #To Write a SELECT query when DB Schema finalized.
         
-        return False
+        return True
     
     def lookup(self, query):
         ''' To do:
