@@ -52,7 +52,7 @@ class MessageHandler(ClientXMPP):
             if(msg['type']=='chat'):  #using msg type "chat" to symbolise queries
                 QueryHandlerModule.queryparse(msg)
             else:
-                RegistrationModule.registerUser(msg)  #using msg type "normal" to symbolise registration for capabilities
+                RegistrationModule.processRegistrationMessage(msg)  #using msg type "normal" to symbolise registration for capabilities
             msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
             
 
