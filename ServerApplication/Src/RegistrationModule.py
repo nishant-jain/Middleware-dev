@@ -3,17 +3,42 @@ Created on 11-Mar-2014
 
 @author: nishant
 '''
-def registerUser(msg): #(long userID,long password, string[] sensorsPresent): #msg contains userid+capabilities 
-    ''' To do:
-        Parse the incoming message and store the capabilities of a particular user in the DB
-    '''
+import json
+import threading
+
+class RegistrationProcessor(threading.Thread):
     
-    return 
-     
-def deRegisterUser(userID): #(long userID):    
+    def __init__(self, msgHandler, rMessage):
+        self.rMessage = rMessage
+        self.msgHandler = msgHandler
+        
+        
+        '''This is the method called when this thread is started.'''
+    def run(self):
+        ''' Check if the message is registration or deregistration '''
+        self.msgObject = json.loads(self.rMessage['body'])
+        if self.msgObject['operation'] in ('registration'): #preliminary Check, might change later
+            self.registerUser(self.msgObject)
+        else:
+            self.deRegisterUser(self.msgObject)
+        return
     
-    ''' To do:
-            Remove the entries for the userID from the DB
-            Remember to deregister from the jabber server as well apart from this. 
+    def registerUser(self, msgObject): #(long userID,long password, string[] sensorsPresent): #msg contains userid+capabilities 
+        ''' To do:
+            Parse the incoming message and store the capabilities of a particular user in the DB
         '''
-    return
+        
+        
+        return 
+         
+    def deRegisterUser(self, msgObject): #(long userID):    
+        
+        ''' To do:
+                Remove the entries for the userID from the DB
+                Remember to deregister from the jabber server as well apart from this. 
+            '''
+        return
+    
+def processRegistrationMessage(msgHandler, rMessage):
+    processor = RegistrationProcessor(msgHandler, rMessage)
+    processor.start()
