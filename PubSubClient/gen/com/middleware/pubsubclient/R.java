@@ -84,6 +84,7 @@ public final class R {
     }
     public static final class string {
         public static final int acc=0x7f06000d;
+        public static final int acc_settings=0x7f060013;
         public static final int action_settings=0x7f060002;
         public static final int app_name=0x7f060001;
         public static final int count=0x7f06000b;
@@ -132,6 +133,7 @@ public final class R {
         public static final int AppTheme=0x7f080001;
     }
     public static final class xml {
-        public static final int subscriptions=0x7f040000;
+        public static final int settings=0x7f040000;
+        public static final int subscriptions=0x7f040001;
     }
 }

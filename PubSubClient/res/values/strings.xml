@@ -36,5 +36,6 @@
         <item>Exact</item>
      
     </string-array>
+     <string name="acc_settings">Account Settings</string>
 
 </resources>

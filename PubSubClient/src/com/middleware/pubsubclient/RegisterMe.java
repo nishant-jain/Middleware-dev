@@ -40,7 +40,7 @@ public class RegisterMe extends Activity{
 	public static final String PREFS_NAME = "Preferences_File";
 	ConnectionConfiguration config;
 	public static XMPPConnection conn;
-	
+	public static AccountManager am;
 	SharedPreferences chkInstall;
 	SharedPreferences.Editor editPrefs;
 	SensorManager sm;
@@ -48,6 +48,7 @@ public class RegisterMe extends Activity{
 	public static List<Sensor> deviceSensors;
 	AlertDialog.Builder showDialog;
 	Message loginWithServer;
+	boolean accountExists;
 	
 	@SuppressLint("ShowToast")
 	@Override
@@ -65,8 +66,8 @@ public class RegisterMe extends Activity{
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 						
-		System.out.println("Establishing connection with gtalk server");
-		config=new ConnectionConfiguration("server@103.25.231.31",5222, "103.25.231.23");
+		System.out.println("Establishing connection with server");
+		config=new ConnectionConfiguration("103.25.231.23",5222);
 		config.setDebuggerEnabled(true);
 		//config=new ConnectionConfiguration("jabber.org",5222);
 		conn=new XMPPConnection(config);
@@ -103,6 +104,7 @@ public class RegisterMe extends Activity{
 			try {		
 			conn.connect();
 			System.out.println("Connection Established");
+			am=conn.getAccountManager();
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -126,24 +128,42 @@ public class RegisterMe extends Activity{
 		
 		else
 		{
-			if(conn.isConnected())
-			{
-			System.out.println("trying to login");
-			try {
-				username=chkInstall.getString("username", null);
-				password=chkInstall.getString("password", null);
-				conn.login(username	,password);
-				System.out.println("login successful");
-			} catch (XMPPException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			}
-			else
-				System.out.println("Not connected to the server");
+			loginToServer();
 			
 		}
 	}
+	
+	public void loginToServer()
+	{
+		if(conn.isConnected())
+		{
+		System.out.println("trying to login");
+		try {
+			username=chkInstall.getString("username", null);
+			password=chkInstall.getString("password", null);
+			conn.login(username	,password);
+			System.out.println("login successful");
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			showDialog.setTitle("Login failed")
+			.setMessage("Unable to login...Make sure you are registered with the server")
+			.create()
+			.show();
+		}
+		}
+		else
+			System.out.println("Not connected to the server");
+		
+	}
+	
+	protected void onDestroy()
+	{
+		super.onDestroy();
+		conn.disconnect();
+		System.out.println("Connection terminated");
+	}
+	
 	
 	private boolean isNetworkAvailable() {
 	    ConnectivityManager connectivityManager 
@@ -173,6 +193,10 @@ public class RegisterMe extends Activity{
             Intent i=new Intent(getApplicationContext(),SubscribeTopics.class);
             startActivity(i);
             break;
+        case R.id.action_settings:
+        	Intent i2=new Intent(getApplicationContext(),Settings.class);
+        	startActivity(i2);
+        	break;
 		}
 		return false;
 		
@@ -183,7 +207,7 @@ public class RegisterMe extends Activity{
 	{			
 		if(isNetworkAvailable() && conn.isConnected())
 		{
-			AccountManager am=conn.getAccountManager();
+			
 			if(am.supportsAccountCreation())
 				{
 				System.out.println("Server Supports new account creation");
@@ -202,35 +226,44 @@ public class RegisterMe extends Activity{
 						sensorList.append(s.getName()+"\n");	
 					}					
 					*/
-					Map<String, String> attributes = new HashMap<String, String>();
+					//Map<String, String> attributes = new HashMap<String, String>();
 					//attributes.put("sensorInfo", sensorList.toString());   //to send only sensor names
-					attributes.put("sensorInfo", deviceSensors.toString());
+					//attributes.put("sensorInfo", deviceSensors.toString());
 					//System.out.println(sensorList.toString());
 					//am.createAccount(username, password, attributes);
 					am.createAccount(username, password);		//creates an account with the XMPP server
-					showDialog.setMessage("registered with the XMPP server")
-					.create()
-					.show();
+					showDialog.setMessage("registered with the XMPP server");
+					//.create()
+					//.show();
 					
 					
 					//IQ packets of type SET are used to set new values at the server and ensures a response 
-					IQ test = null;
+					/*IQ test = null;
 					test.setType(IQ.Type.SET);
 					test.setFrom(username);
 					test.setProperty("sensors",deviceSensors.toString());
 					conn.sendPacket(test);
-					
+					*/
 					//a normal message can be sent to the server but will create a problem with receiving acknowledgments 
-					/*loginWithServer=new Message("JID of the server",Message.Type.normal);
-					loginWithServer.setFrom(username);
+					loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+					//loginWithServer.setFrom(username);
 					loginWithServer.setSubject("Sensor Capabilities");
 					loginWithServer.setBody(deviceSensors.toString());
 					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
-					*/
+					showDialog.setMessage("Sensor information sent to the server (No acknowledgement received")
+					.create()
+					.show();
+					loginToServer();
 				}
 				catch(Exception e)
 				{
-					e.printStackTrace();
+					accountExists=true;
+					showDialog.setMessage("Account already exists")
+					.create()
+					.show();
+					if(accountExists)
+						loginToServer();
+					//e.printStackTrace();
 				}
 				}
 		
@@ -259,7 +292,8 @@ public class RegisterMe extends Activity{
 		String UNIQUE_ID;
 		TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE); 
 		UNIQUE_ID=  mngr.getDeviceId();
-		userName=UNIQUE_ID.concat("@serverName");
+		//userName=UNIQUE_ID.concat("@serverName");
+		userName=UNIQUE_ID;
 		editPrefs.putString("username", userName).commit();
 		editPrefs.putString("password", UNIQUE_ID).commit();
 		System.out.println("username created: "+userName);

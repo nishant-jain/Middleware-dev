@@ -44,6 +44,12 @@
            
        </activity>
        
+       <activity
+           android:name="com.middleware.pubsubclient.Settings"
+           android:label="Account Settings">
+           
+       </activity>
+       
     </application>
 
 </manifest>

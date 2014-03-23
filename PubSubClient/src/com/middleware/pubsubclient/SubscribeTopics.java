@@ -5,11 +5,14 @@ import java.util.Set;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.hardware.Sensor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.MultiSelectListPreference;
 import android.preference.PreferenceManager;
@@ -24,7 +27,7 @@ public class SubscribeTopics extends PreferenceActivity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        //preferences=getSharedPreferences(RegisterMe.PREFS_NAME,0);
+        
         addPreferencesFromResource(R.xml.subscriptions);
         
         MultiSelectListPreference topicList = (MultiSelectListPreference) findPreference("sensorList");
@@ -47,7 +50,7 @@ public class SubscribeTopics extends PreferenceActivity{
 	
 	
     Set<String> selections = preferences.getStringSet("sensorList", null);
-     String[] selected= selections.toArray(new String[]{});
+    String[] selected= selections.toArray(new String[]{});
      for(String s:selected)
      {
     	 System.out.println(s);
@@ -93,17 +96,42 @@ public class SubscribeTopics extends PreferenceActivity{
 			public void onClick(DialogInterface arg0, int arg1) {
 				// TODO Auto-generated method stub
 				
-				
 				//add code to upload the preferences to the server
 				//send an xmpp iq messages to the server JID containing the updated list of sensors
+				if(isNetworkAvailable())
+				{
+					//send the list of sensors to the server
+				}
+				else
+				{
+					AlertDialog.Builder alertb=new Builder(getPreferenceScreen().getContext());
+					alertb.setTitle("Network Unavailable");
+					alertb.setMessage("Unable to connect to the internet...Please Try again")
+					.setPositiveButton("OK", new OnClickListener() {
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							
+						}
+					})
+					.create().show();
+				}
 			}
 		})
     	.create()
     	 .show();
-    	
-    	
-    	
-    	
 	}
+	
+	private boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    if(activeNetworkInfo != null && activeNetworkInfo.isConnected())
+	    return true;
+	    else
+	    	return false;
+	}
+	
 
 }
