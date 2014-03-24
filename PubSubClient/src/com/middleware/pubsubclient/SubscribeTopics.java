@@ -31,6 +31,8 @@ public class SubscribeTopics extends PreferenceActivity{
 	String entries[];
 	StringBuilder list;
 	XMPPConnection conn;
+	boolean sent;
+	AlertDialog.Builder alertb;
 	
 	@SuppressWarnings("deprecation")
 	@Override
@@ -39,7 +41,7 @@ public class SubscribeTopics extends PreferenceActivity{
        // preferences=getSharedPreferences(RegisterMe.PREFS_NAME, 0);
         preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         conn=RegisterMe.conn;
-        
+        sent=false;
         addPreferencesFromResource(R.xml.subscriptions);
         
         MultiSelectListPreference topicList = (MultiSelectListPreference) findPreference("sensorList");
@@ -85,6 +87,7 @@ public class SubscribeTopics extends PreferenceActivity{
 	
 	public void updatePrefs()
 	{
+		alertb=new Builder(getPreferenceScreen().getContext());
 		System.out.println("Preferences changed....new preferences are");
 		 Set<String> selections = preferences.getStringSet("sensorList", null);
 	        String[] selected = selections.toArray(new String[] {});
@@ -94,9 +97,25 @@ public class SubscribeTopics extends PreferenceActivity{
 		    	list.append(entries[Integer.parseInt(s)]+"\n");		    	
 		    }
 		
-       // System.out.println(list.toString());
+        System.out.println(list.toString());
+        alertb.setTitle("Updating Preferences");
+        if(isNetworkAvailable() && conn.isConnected())
+		{
+			//send the list of sensors to the server
+			Message topics=new Message("server@103.25.231.23",Message.Type.normal);
+			topics.setSubject("Subscription");
+			topics.setBody(list.toString());
+			conn.sendPacket(topics);
+			System.out.println("Sent");
+			sent=true;
+			alertb.setMessage("Preferences uploaded").create().show();
+		}
+        else
+        {
+        	alertb.setMessage("Error Uploading...Try again").create().show();
+        }
         
-        
+        /*
     	@SuppressWarnings("deprecation")
 		AlertDialog.Builder alertb=new Builder(getPreferenceScreen().getContext());
     	alertb.setTitle("Updating Preferences")
@@ -125,10 +144,13 @@ public class SubscribeTopics extends PreferenceActivity{
 					topics.setBody(list.toString());
 					conn.sendPacket(topics);
 					System.out.println("Sent");
-					
+					sent=true;
 				}
 				else
 				{
+					/*AlertDialog.Builder hc=new Builder(getApplicationContext());
+					hc.setMessage("testing");
+						//hc.create().show();
 					AlertDialog.Builder alertb=new Builder(getPreferenceScreen().getContext());
 					alertb.setTitle("Network Unavailable");
 					alertb.setMessage("Unable to connect to the internet...Please Try again")
@@ -139,13 +161,24 @@ public class SubscribeTopics extends PreferenceActivity{
 							// TODO Auto-generated method stub
 							
 						}
-					})
-					.create().show();
+					});
+					//.create().show();
+					 * 
+					 
+					sent=false;
 				}
 			}
 		})
     	.create()
     	 .show();
+    	//alertb=new Builder(getPreferenceScreen().getContext());
+    	if(sent)
+    	{    		
+    		new UploadPrefs().show(getFragmentManager(), "MyDialog");
+    	}
+    	else 
+    		alertb.setMessage("Error uploading...Try again").create().show();
+    		*/
 	}
 	
 	private boolean isNetworkAvailable() {

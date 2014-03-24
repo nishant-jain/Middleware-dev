@@ -103,7 +103,29 @@ public class RegisterMe extends Activity{
 				
 		}
 		
-		
+		obj=new JSONObject();
+		for(Sensor s : deviceSensors)
+		{
+			JSONArray array=new JSONArray();
+			try {
+				array.put(s.getMaximumRange());
+				array.put(s.getMinDelay());
+				array.put((Number)s.getPower());
+				array.put((Number)s.getResolution());
+				obj.put(findType(s.getType()),array);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		try {
+			obj.put("noSensors", obj.length());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println(obj.toString());
 		if(isNetworkAvailable())
 		{
 			try {		
@@ -278,20 +300,6 @@ public class RegisterMe extends Activity{
 				try{
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
-					
-					obj=new JSONObject();
-					for(Sensor s : deviceSensors)
-					{
-						JSONArray array=new JSONArray();
-						array.put(s.getMaximumRange());
-						array.put(s.getMinDelay());
-						array.put((Number)s.getPower());
-						array.put((Number)s.getResolution());
-						obj.put(findType(s.getType()),array);
-					}
-					obj.put("noSensors", obj.length());
-					//System.out.println(obj.toString());
-				
 					am.createAccount(username, password);		//creates an account with the XMPP server
 					loginToServer();
 					
