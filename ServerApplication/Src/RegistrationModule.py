@@ -82,7 +82,7 @@ class RegistrationProcessor(threading.Thread):
                 Remember to deregister from the jabber server as well apart from this. 
             '''
         try:
-            u = User.get(User.username==userName, User.RegistrationDate==datetime.datetime.now())
+            u = User.get(User.username==userName)
             sensorObjects = SensorUserRel.select().where(SensorUserRel.user==u)
             for i in sensorObjects:
                 i.delete_instance()
