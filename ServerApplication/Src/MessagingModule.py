@@ -4,8 +4,8 @@ Created on 11-Mar-2014
 @author: nishant
 '''
 import logging
-import QueryHandlerModule
 import RegistrationModule
+import QueryHandlerModule
 from sleekxmpp import ClientXMPP
 
 
