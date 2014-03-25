@@ -21,11 +21,11 @@ class RegistrationProcessor(threading.Thread):
         ''' Check if the message is registration or deregistration '''
         self.msgObject = json.loads(self.rMessage['body'])
         print "Running Registration Processor!"
-        print str(self.rMessage['subject'])
+        print str(self.rMessage['subject']) + " ; is the message subject"
         if str(self.rMessage['subject'])  in ('Sensor Capabilities'): #preliminary Check, might change later
             print "Matched Register!"
             self.registerUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
-        else:
+        elif str(self.rMessage['subject']) in ('Delete Account'):
             print "Matched DeRegister!"
             self.deRegisterUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
         return
