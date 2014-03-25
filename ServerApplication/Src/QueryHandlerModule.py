@@ -2,10 +2,12 @@
 Created on 11-Mar-2014
 
 @author: nishant
+
 '''
 import threading
 import json
 from Models import Query
+from Models import SensorUserRel,Sensor,User
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -35,7 +37,7 @@ class QueryProcessor(threading.Thread):
 #         q.expiryTime = qObj['expiryTime']
         q.countMin = eval(qObj['countMin'])
         q.countMax = eval(qObj['countMax'])
-        q.countReceved = 0
+        q.countReceived = 0
         
         q.save()    
            
@@ -52,14 +54,24 @@ class QueryProcessor(threading.Thread):
         '''Check from the database if we even have the requested number of devices to service the query.'''
         #if found return True
         #To Write a SELECT query when DB Schema finalized.
-        
-        return True
-    
+        #assuming no future queries for now
+        ''' #Untested code
+        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(self.queryObject['frequency']<1000/Sensor.minDelay) )
+        count=0
+        for p in u:
+                count=count+p.users.count()
+        #count=User.select().join(Sensor).join(SensorUserRel).where(SensorUserRel.user == SensorUserRel.sensor).count()
+        if(count>self.queryObject['countMin']):
+            return True
+        else:
+            return False
+    '''
     def lookup(self, query):
         ''' To do:
         returns true if the query can be serviced by already available queries in the Query Database
         ; otherwise returns false and the query is forwarded to the DataRequester Module.
         '''
+        
         return 
     
     def sendAcknowledgement(self, accepted=True, errMessage=""): 
