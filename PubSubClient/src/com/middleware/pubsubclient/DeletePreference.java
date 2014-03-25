@@ -1,16 +1,18 @@
 package com.middleware.pubsubclient;
 
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.DialogPreference;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 
 public class DeletePreference extends DialogPreference {
@@ -32,6 +34,7 @@ public class DeletePreference extends DialogPreference {
 	    	return false;
 	}
 	
+	
 	@Override
 	protected void onDialogClosed(boolean positiveResult) {
 	    super.onDialogClosed(positiveResult);
@@ -40,6 +43,7 @@ public class DeletePreference extends DialogPreference {
 	    	System.out.println("Yes clicked");
 	    	XMPPConnection conn=RegisterMe.conn;
 	    	AccountManager accMgr=RegisterMe.am;
+	    	
 	    	try {
 	    		delete=new Message("server@103.25.231.23",Message.Type.normal);
 				//loginWithServer.setFrom(username);
@@ -50,9 +54,13 @@ public class DeletePreference extends DialogPreference {
 				accMgr.deleteAccount();
 				AlertDialog.Builder alert=new Builder(getContext());
 				alert.setTitle("Account Deleted")
-				.setMessage("Account has been successfully deleted")
+				.setMessage("Deletion request sent")
 				.create()
 				.show();
+				
+				SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getContext());
+				pref.edit().clear().commit();
+			    
 			} catch (XMPPException e) {
 				// TODO Auto-generated catch block
 				AlertDialog.Builder alert=new Builder(getContext());
