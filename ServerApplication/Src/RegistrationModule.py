@@ -19,15 +19,15 @@ class RegistrationProcessor(threading.Thread):
         '''This is the method called when this thread is started.'''
     def run(self):
         ''' Check if the message is registration or deregistration '''
-        self.msgObject = json.loads(self.rMessage['body'])
         print "Running Registration Processor!"
         print str(self.rMessage['subject'])
         if str(self.rMessage['subject'])  in ('Sensor Capabilities'): #preliminary Check, might change later
             print "Matched Register!"
+            self.msgObject = json.loads(self.rMessage['body'])
             self.registerUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
         else:
             print "Matched DeRegister!"
-            self.deRegisterUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
+            self.deRegisterUser(str(self.rMessage['from']).split("@")[0])
         return
     
     def registerUser(self, msgObject, userName): #(long userID,long password, string[] sensorsPresent): #msg contains userid+capabilities 
@@ -75,7 +75,7 @@ class RegistrationProcessor(threading.Thread):
         
         return 
          
-    def deRegisterUser(self, msgObject, userName): #(long userID):    
+    def deRegisterUser(self, userName): #(long userID):    
         
         ''' To do:
                 Remove the entries for the userID from the DB
@@ -91,6 +91,7 @@ class RegistrationProcessor(threading.Thread):
             print "Something went wrong."
             return
         
+        print str(userName) + " deleted successfully!"
         self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="De-Registration Successful!", mbody="Thank you!")
 
         return
