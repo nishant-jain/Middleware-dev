@@ -10,7 +10,7 @@ import peewee
 from peewee import *
 
 """ Making it a in-memory SQLite database for now, before we figure out some centralized way to establish DBs across machines """
-dbObject = SqliteDatabase(":memory:")
+dbObject = SqliteDatabase("firstDB.db", threadlocals=True)
 
 class baseDBModel(Model):
     """A base model that will use our Backend database"""
@@ -50,4 +50,14 @@ class Query(baseDBModel):
     countMax= IntegerField()
     countReceived = IntegerField()
  
+def connect(): 
+    print "Connecting!"
+    dbObject.connect()
+    Sensor.create_table()
+    User.create_table()
+    SensorUserRel.create_table()
+    Query.create_table()
+    print "Created Tables!"
+    
 dbObject.connect()
+#connect()

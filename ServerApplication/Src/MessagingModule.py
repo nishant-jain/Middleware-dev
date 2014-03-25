@@ -16,6 +16,7 @@ class MessageHandler(ClientXMPP):
 
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
+        
 
         # If you wanted more functionality, here's how to register plugins:
         # self.register_plugin('xep_0030') # Service Discovery
@@ -47,13 +48,15 @@ class MessageHandler(ClientXMPP):
         #     self.disconnect()
 
     def message(self, msg):
+        print "Got Message!"
+        msg['from'] = str(msg['from']).split("/")[0]
         if msg['type'] in ('chat', 'normal'):
             #print "Message received",msg
-            if(msg['type']=='chat'):  #using msg type "chat" to symbolise queries
-                QueryHandlerModule.queryparse(msg)
+            if(msg['type'] is 'chat'):  #using msg type "chat" to symbolise queries
+                QueryHandlerModule.queryparse(self, msg)
             else:
-                RegistrationModule.processRegistrationMessage(msg)  #using msg type "normal" to symbolise registration for capabilities
-            msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
+                RegistrationModule.processRegistrationMessage(self, msg)  #using msg type "normal" to symbolise registration for capabilities
+            #msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
             
 
 
@@ -63,10 +66,11 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG,
                         format='%(levelname)-8s %(message)s')
+    #Models.connect()
     print "hello"    
     xmpp = MessageHandler('admin@localhost', 'kshitiz') #Should keep a centralized username and password. 
     xmpp.connect()
     
     #print "hi"
     #xmpp.send_message(mto="new_nishant@localhost", mbody="hello1234",mtype="chat")
-    xmpp.process(block=True)    
+    xmpp.process(block=False)    
