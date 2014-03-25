@@ -10,25 +10,37 @@ import peewee
 from peewee import *
 
 """ Making it a in-memory SQLite database for now, before we figure out some centralized way to establish DBs across machines """
-sqlite_db = SqliteDatabase(":memory:")
+dbObject = SqliteDatabase(":memory:")
 
 class baseDBModel(Model):
     """A base model that will use our Backend database"""
     class Meta:
-        database = sqlite_db
+        database = dbObject
  
+
+class Sensor(baseDBModel):
+    name = TextField()
+    SensorType = CharField()
+    maxRange = DoubleField()
+    minDelay = DoubleField()
+    power = DoubleField()
+    resolution = DoubleField()
+     
 class User(baseDBModel):
     username = CharField()
-    topicsSubscribedTo = TextField()
-    queriedFor =  TextField()
-    sensorsPresent = TextField()
+    RegistrationDate = DateTimeField()
+    
+class SensorUserRel(baseDBModel):
+    user = ForeignKeyField(User, related_name="sensors")
+    sensor = ForeignKeyField(Sensor, related_name="users")   
     
 class Query(baseDBModel):
-    username = CharField()
-    queryNo= FloatField()
-    dataReqd= TextField()
-    frequency= IntegerField()
+    username = ForeignKeyField(User, related_name="queries")
+    queryNo= BigIntegerField()
+    dataReqd= CharField()
+    frequency = IntegerField() #in Hertz
     Activity= TextField()
+    Location = TextField()
     Latitude= DoubleField()
     Longitude= DoubleField()
     fromTime= DateTimeField()
@@ -36,6 +48,6 @@ class Query(baseDBModel):
     expiryTime= DateTimeField()
     countMin= IntegerField()
     countMax= IntegerField()
-    countReceived= IntegerField()
+    countReceived = IntegerField()
  
-sqlite_db.connect()
+dbObject.connect()
