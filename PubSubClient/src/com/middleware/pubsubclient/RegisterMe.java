@@ -307,7 +307,7 @@ public class RegisterMe extends Activity{
 					loginWithServer.setSubject("Sensor Capabilities");
 					loginWithServer.setBody(obj.toString());
 					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
-					showDialog.setMessage("Sensor information sent to the server (No acknowledgement received")
+					showDialog.setMessage("Sensor information sent to the server (No acknowledgement received)")
 					.create()
 					.show();
 					

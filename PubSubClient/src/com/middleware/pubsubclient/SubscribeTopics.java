@@ -7,23 +7,20 @@ import java.util.Set;
 
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.hardware.Sensor;
-import android.hardware.SensorListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.MultiSelectListPreference;
-import android.preference.PreferenceManager;
 import android.preference.PreferenceActivity;
-import android.widget.Toast;
+import android.preference.PreferenceManager;
 
 public class SubscribeTopics extends PreferenceActivity{
 	
@@ -85,26 +82,37 @@ public class SubscribeTopics extends PreferenceActivity{
 	});
 }
 	
+	@SuppressWarnings("deprecation")
 	public void updatePrefs()
 	{
 		alertb=new Builder(getPreferenceScreen().getContext());
 		System.out.println("Preferences changed....new preferences are");
 		 Set<String> selections = preferences.getStringSet("sensorList", null);
 	        String[] selected = selections.toArray(new String[] {});
-	        list=new StringBuilder();
+	        JSONObject sensors = new JSONObject();
+	        //list=new StringBuilder();
 		    for(String s:selected)
 		    {
-		    	list.append(entries[Integer.parseInt(s)]+"\n");		    	
+		    	//list.append(entries[Integer.parseInt(s)]+"\n");		  
+		    	try {
+					sensors.put(entries[Integer.parseInt(s)], RegisterMe.obj.get(entries[Integer.parseInt(s)]));
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		    }
 		
-        System.out.println(list.toString());
+        //System.out.println(list.toString());
         alertb.setTitle("Updating Preferences");
         if(isNetworkAvailable() && conn.isConnected())
 		{
 			//send the list of sensors to the server
 			Message topics=new Message("server@103.25.231.23",Message.Type.normal);
-			topics.setSubject("Subscription");
-			topics.setBody(list.toString());
+			topics.setSubject("updateSubscription");
+			topics.setBody(sensors.toString());
 			conn.sendPacket(topics);
 			System.out.println("Sent");
 			sent=true;
