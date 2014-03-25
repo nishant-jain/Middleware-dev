@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+	<string name="go_to_publish_query">Publish New Query</string>
     <string name="app_name">PubSubClient</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
@@ -17,6 +17,8 @@
     <string name="gyro">Gyroscope</string>
     <string name="gps">GPS</string>
     <string name="rot">Rotation Vector</string>
+    <string name="subscribe">Update Subscription</string>
+    <string name="pref_user_profile">Subscription Topics</string>
     <string-array name="activity_options">
         <item>Don\'t Care</item>
         <item>On Foot</item>
@@ -34,5 +36,6 @@
         <item>Exact</item>
      
     </string-array>
+     <string name="acc_settings">Account Settings</string>
 
 </resources>

@@ -1,9 +1,0 @@
-<query xmlns="http://justtrying.com">
-<json xmlns="urn:xmpp:json:0">
-  {
-    "name": "romeo",
-    "age": "421", 
-    "status": "single" 
-  }
- </json>
- </query>

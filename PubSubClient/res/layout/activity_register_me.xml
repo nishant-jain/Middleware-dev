@@ -9,22 +9,14 @@
     tools:context=".RegisterMe" >
 
     <Button
-        android:id="@+id/onlyForTesting"
+        android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="45dp"
-        android:layout_marginTop="56dp"
-        android:text="CreatePacketExtension"
-        android:onClick="classFromXML" />
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/onlyForTesting"
-        android:layout_below="@+id/onlyForTesting"
-        android:text=" " />
+        android:layout_marginLeft="52dp"
+        android:layout_marginTop="100dp"
+        android:text="@string/go_to_publish_query" 
+        android:onClick="launchIntent"/>
 
 </RelativeLayout>
