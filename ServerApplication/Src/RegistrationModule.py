@@ -71,6 +71,8 @@ class RegistrationProcessor(threading.Thread):
                 
         print "Registered Successfully!"
         
+        self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="Registration Successful!", mbody="Thank you! Registration/Updation Successful!")
+        
         return 
          
     def deRegisterUser(self, msgObject, userName): #(long userID):    
@@ -88,6 +90,9 @@ class RegistrationProcessor(threading.Thread):
         except:
             print "Something went wrong."
             return
+        
+        self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="De-Registration Successful!", mbody="Thank you!")
+
         return
     
 def processRegistrationMessage(msgHandler, rMessage):
