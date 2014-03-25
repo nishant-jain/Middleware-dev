@@ -7,7 +7,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.pubsub.LeafNode;
+import org.jivesoftware.smackx.pubsub.PayloadItem;
 import org.jivesoftware.smackx.pubsub.PubSubManager;
+import org.jivesoftware.smackx.pubsub.SimplePayload;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,16 +38,19 @@ public class PublishQuery extends Activity {
 
 	private Spinner deviceCount,selectActivity,sensDelay;
 	private EditText minCount;
-	private EditText fromDate,fromTime,toDate,toTime,expiryDate,expiryTime,max,latitude,longitude;
+	public EditText fromDate,fromTime,toDate,toTime,expiryDate,expiryTime,max,latitude,longitude;
 	private CheckBox accelerometer,gps,gyroscope,rotation;
 	SimpleDateFormat df;
 	AlertDialog.Builder showMessage;
-	public EditText lat,longi,locName;
+	//public EditText lat,longi,locName;
+	EditText locName;
 	private Button getCurrentLocation;
 	LocationManager locationManager=null;
 	MyListener ml;
 	Geocoder geocoder;
 	List<Address> addresses;
+	JSONObject query;
+	Button publish;
 		
 	@Override
 	public void onDestroy() {
@@ -71,9 +80,18 @@ public class PublishQuery extends Activity {
 		sensDelay=(Spinner)findViewById(R.id.Spinner01);		
 		df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss"); 
 		
+		//to be commented later
+		fromDate.setText("01-04-2014");
+		toDate.setText("05-04-2014");
+		expiryDate.setText("20-04-2014");
+		fromTime.setText("00:00:00");
+		toTime.setText("00:00:00");
+		expiryTime.setText("00:00:00");
+		
 		getCurrentLocation = (Button)findViewById(R.id.button2);
-		lat = (EditText)findViewById(R.id.editText3);
-		longi = (EditText)findViewById(R.id.EditText05);
+		publish = (Button)findViewById(R.id.button1);
+		//lat = (EditText)findViewById(R.id.editText3);
+		//longi = (EditText)findViewById(R.id.EditText05);
 		locName = (EditText)findViewById(R.id.editText4);
 		max = (EditText)findViewById(R.id.EditText06);
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -88,6 +106,14 @@ public class PublishQuery extends Activity {
 				getCurrentLocation.setText("Finding Location..");
 			}
 		});
+		
+		publish.setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View arg0) {
+				sendQuery(arg0);
+			}
+		});
+		
 		deviceCount.setOnItemSelectedListener(new OnItemSelectedListener()
 		{
 			@Override
@@ -117,7 +143,7 @@ public class PublishQuery extends Activity {
 		
 	}
 	
-	public String generatePayload()
+	public JSONObject generatePayload() throws JSONException
 	{
 		String sensors,delay;
 		Long fromEpoch,toEpoch,expiryEpoch;
@@ -190,6 +216,19 @@ public class PublishQuery extends Activity {
 					+"</count>";
 		System.out.println(query);*/
 		
+		query = new JSONObject();
+		query.put("username", RegisterMe.username);
+		query.put("dataReqd",sensors);
+		query.put("fromTime", fromEpoch);
+		query.put("toTime", toEpoch);
+		query.put("expiryTime", expiryEpoch);
+		query.put("location", lat);
+		query.put("longitude",lon);
+		query.put("activity", activity);
+		query.put("frequency",delay);
+		query.put("countMin", countMin);
+		query.put("countMax", countMax);
+		/*
 		String query="<json xmlns=\"urn:xmpp:json:0\">"
 						+ "{"
 				+"\"username\":"+"\""+RegisterMe.username+"\""+","
@@ -202,9 +241,9 @@ public class PublishQuery extends Activity {
 				+ "\"frequency\":"+ "\""+delay+ "\""+","
 				+ "\"count\":{\"countMin\":"+ "\""+countMin+ "\""+",\"countMax\":"+ "\""+countMax+ "\""+"}"
 				+"}"
-				+ "</json>";
+				+ "</json>";*/
 		
-		System.out.println(query);
+		System.out.println(query.toString());
 		return query;
 	}
 	
@@ -214,26 +253,31 @@ public class PublishQuery extends Activity {
 		showMessage = new Builder(this);
 		try
 		{
-	   String query=generatePayload();
+	   JSONObject query=generatePayload();
 		
 	   PubSubManager mgr=new PubSubManager(RegisterMe.conn);
 		
 		try {
-			showMessage.setTitle("Query Submission")
+		/*	showMessage.setTitle("Query Submission")
 			.setMessage("Not working")
 			.create()
-			.show();
+			.show();*/
 			
 			//ItemId is the query number
-			/*LeafNode testNode=mgr.createNode("testing");
+			/*LeafNode testNode=mgr.createNode(""+System.currentTimeMillis());
 			testNode.sendConfigurationForm(NodeConfig.setNodeConfig());			
 			System.out.println("Test node created");			
-			testNode.send(new PayloadItem<SimplePayload>(RegisterMe.username+System.currentTimeMillis(), new SimplePayload("query", "pubsub:client:query", query)));
+			testNode.send(new PayloadItem<SimplePayload>(RegisterMe.username+System.currentTimeMillis(), new SimplePayload("query", "pubsub:client:query", "<book xmlns='pubsub:test:book'><title>Lord of the Rings</title></book>")));*/
+			
+			Message query2 = new Message("server@103.25.231.23",Message.Type.normal);
+			query2.setSubject("query");
+			query2.setBody(query.toString());
+			RegisterMe.conn.sendPacket(query2);	
 			showMessage.setTitle("Query Submission")
 			.setMessage("Successful")
 			.create()
 			.show();
-			*/
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -256,8 +300,8 @@ public class PublishQuery extends Activity {
 		public void onLocationChanged(Location location) {
 			//Toast.makeText(getApplicationContext(), ""+location.getLatitude(),
 				//	Toast.LENGTH_SHORT).show();
-			lat.setText(""+location.getLatitude());
-			longi.setText(""+location.getLongitude());
+			latitude.setText(""+location.getLatitude());
+			longitude.setText(""+location.getLongitude());
 			
 			try {
 				addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
