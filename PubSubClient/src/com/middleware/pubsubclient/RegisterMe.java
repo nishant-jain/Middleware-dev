@@ -12,6 +12,9 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -33,6 +36,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 
+@SuppressLint("UseValueOf")
 public class RegisterMe extends Activity{
 	
 	public static String username;
@@ -49,6 +53,7 @@ public class RegisterMe extends Activity{
 	AlertDialog.Builder showDialog;
 	Message loginWithServer;
 	boolean accountExists;
+	public static JSONObject obj;
 	
 	@SuppressLint("ShowToast")
 	@Override
@@ -98,7 +103,29 @@ public class RegisterMe extends Activity{
 				
 		}
 		
-		
+		obj=new JSONObject();
+		for(Sensor s : deviceSensors)
+		{
+			JSONArray array=new JSONArray();
+			try {
+				array.put(s.getMaximumRange());
+				array.put(s.getMinDelay());
+				array.put((Number)s.getPower());
+				array.put((Number)s.getResolution());
+				obj.put(findType(s.getType()),array);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		try {
+			obj.put("noSensors", obj.length());
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println(obj.toString());
 		if(isNetworkAvailable())
 		{
 			try {		
@@ -129,7 +156,6 @@ public class RegisterMe extends Activity{
 		else
 		{
 			loginToServer();
-			
 		}
 	}
 	
@@ -139,10 +165,17 @@ public class RegisterMe extends Activity{
 		{
 		System.out.println("trying to login");
 		try {
+			
 			username=chkInstall.getString("username", null);
 			password=chkInstall.getString("password", null);
 			conn.login(username	,password);
 			System.out.println("login successful");
+			showDialog.setTitle("Login successful")
+			.setMessage("connected to the server")
+			.create()
+			.show();
+			
+			
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -150,11 +183,13 @@ public class RegisterMe extends Activity{
 			.setMessage("Unable to login...Make sure you are registered with the server")
 			.create()
 			.show();
+			
 		}
 		}
 		else
+		{
 			System.out.println("Not connected to the server");
-		
+		}
 	}
 	
 	protected void onDestroy()
@@ -202,6 +237,57 @@ public class RegisterMe extends Activity{
 		
 	}
 	
+	
+	public String findType(int i)
+	{
+		switch(i)
+		{
+		case 1:
+			return "Accelerometer";
+		case 2:
+			return "Magnetic Field";
+		case 3:
+			return "Orientation";
+		case 4:
+			return "Gyroscope";
+		case 5:
+			return "Light";
+		case 6:
+			return "Pressure";
+		case 7:
+			return "Temperature";
+		case 8:
+			return "Proximity";
+		case 9:
+			return "Gravity";
+		case 10:
+			return "Linear Acceleration";
+		case 11:
+			return "Rotation Vector";
+		case 12:
+			return "Relative Humidity";
+		case 13:
+			return "Ambient Temperature";
+		case 14:
+			return "Uncalibrated Magnetic Field";
+		case 15:
+			return "Game Rotation Vector";
+		case 16:
+			return "Uncalibrated Gyroscope";
+		case 17:
+			return "Significant motion";
+		case 18:
+			return "Step Detector";
+		case 19:
+			return "Step Counter";
+		case 20:
+			return "Geomagnetic Rotation Vector";
+		default:
+			return "Type unknown";
+		}
+		
+	}
+
 	@SuppressLint("ShowToast")
 	public void registerClient()
 	{			
@@ -212,58 +298,25 @@ public class RegisterMe extends Activity{
 				{
 				System.out.println("Server Supports new account creation");
 				try{
-					/*check how many attributes need to be provided for creating a new account
-					 * Collection<String> c=am.getAccountAttributes();
-						for (Object o : c)
-					    System.out.println(o);
-					*/
-					StringBuilder sensorList = new StringBuilder();
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
-					/*
-					for(Sensor s : deviceSensors)
-					{
-						sensorList.append(s.getName()+"\n");	
-					}					
-					*/
-					//Map<String, String> attributes = new HashMap<String, String>();
-					//attributes.put("sensorInfo", sensorList.toString());   //to send only sensor names
-					//attributes.put("sensorInfo", deviceSensors.toString());
-					//System.out.println(sensorList.toString());
-					//am.createAccount(username, password, attributes);
 					am.createAccount(username, password);		//creates an account with the XMPP server
-					showDialog.setMessage("registered with the XMPP server");
-					//.create()
-					//.show();
+					loginToServer();
 					
-					
-					//IQ packets of type SET are used to set new values at the server and ensures a response 
-					/*IQ test = null;
-					test.setType(IQ.Type.SET);
-					test.setFrom(username);
-					test.setProperty("sensors",deviceSensors.toString());
-					conn.sendPacket(test);
-					*/
-					//a normal message can be sent to the server but will create a problem with receiving acknowledgments 
 					loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
-					//loginWithServer.setFrom(username);
 					loginWithServer.setSubject("Sensor Capabilities");
-					loginWithServer.setBody(deviceSensors.toString());
+					loginWithServer.setBody(obj.toString());
 					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
 					showDialog.setMessage("Sensor information sent to the server (No acknowledgement received")
 					.create()
 					.show();
-					loginToServer();
+					
 				}
 				catch(Exception e)
 				{
 					accountExists=true;
-					showDialog.setMessage("Account already exists")
-					.create()
-					.show();
 					if(accountExists)
 						loginToServer();
-					//e.printStackTrace();
 				}
 				}
 		
@@ -278,6 +331,7 @@ public class RegisterMe extends Activity{
 		else
 			{
 			System.out.println("not connected to the server");
+			
 			showDialog.setMessage("Not connected to the server")
 			.create()
 			.show();
