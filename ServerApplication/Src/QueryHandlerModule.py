@@ -13,33 +13,38 @@ class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
         super(QueryProcessor, self).__init__()
         self.qMessage = qMessage
+    
         self.queryObject = ""
         self.msgHandler = msgHandler
         
     ''' This is the method that runs on starting this thread. '''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
-        self.storeQueryInDB(self.queryObject)
+        uname = self.qMessage['from']
+        self.storeQueryInDB(uname,self.queryObject)
         
-    def storeQueryInDB(self, qObj):
+    def storeQueryInDB(self,user,qObj):
         ''' To do:
         Parse parameters of query from the received msg and store it in DB
         '''
         q = Query()
-        q.username = qObj['username']
+        q.username = user
         q.queryNo = eval(qObj['queryNo'])
         q.dataReqd = qObj['dataReqd']
         q.frequency = eval(qObj['frequency'])
         q.Latitude = eval(qObj['latitude'])
         q.Longitude = eval(qObj['longitude'])
-#         q.fromtime = qObj['fromTime']
-#         q.toTime = qObj['toTime']
-#         q.expiryTime = qObj['expiryTime']
+        q.fromTime = eval(qObj['fromTime'])
+        q.toTime = eval(qObj['toTime'])   
+        q.expiryTime = eval(qObj['expiryTime'])
+        q.Location = eval(qObj['location'])
+        q.Activity = eval(qObj['activity'])
         q.countMin = eval(qObj['countMin'])
         q.countMax = eval(qObj['countMax'])
         q.countReceived = 0
         
         q.save()    
+        
            
         if(self.queryPossible()):
             self.sendAcknowledgement(True)

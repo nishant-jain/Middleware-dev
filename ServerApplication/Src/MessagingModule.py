@@ -68,7 +68,7 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
     #Models.connect()
     print "hello"    
-    xmpp = MessageHandler('admin@localhost', 'kshitiz') #Should keep a centralized username and password. 
+    xmpp = MessageHandler('server@arjuns-macbook-pro-2.local', 'check') #Should keep a centralized username and password. 
     xmpp.connect()
     
     #print "hi"
