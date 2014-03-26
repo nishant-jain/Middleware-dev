@@ -1,17 +1,19 @@
 package com.middleware.pubsubclient;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
+import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.IQ;
+import org.jivesoftware.smack.filter.AndFilter;
+import org.jivesoftware.smack.filter.PacketFilter;
+import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,8 +78,7 @@ public class RegisterMe extends Activity{
 		config.setDebuggerEnabled(true);
 		//config=new ConnectionConfiguration("jabber.org",5222);
 		conn=new XMPPConnection(config);
-		
-								
+					
 		try {
 				config.setSASLAuthenticationEnabled(true);
 				config.setCompressionEnabled(true);
@@ -145,7 +146,7 @@ public class RegisterMe extends Activity{
 		chkInstall=getSharedPreferences(PREFS_NAME,0);
 		editPrefs=chkInstall.edit();
 		boolean installing=chkInstall.getBoolean("firstInstall", true);
-		
+		//installing = true;
 		if(installing)
 		{			
 			System.out.println("installing application");			
@@ -307,10 +308,10 @@ public class RegisterMe extends Activity{
 					loginWithServer.setSubject("Sensor Capabilities");
 					loginWithServer.setBody(obj.toString());
 					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
-					showDialog.setMessage("Sensor information sent to the server (No acknowledgement received)")
+					showDialog.setMessage("Sensor information sent to the server.")
 					.create()
 					.show();
-					
+					listeningForMessages();
 				}
 				catch(Exception e)
 				{
@@ -328,6 +329,7 @@ public class RegisterMe extends Activity{
 				.show();						
 			}
 		}
+		
 		else
 			{
 			System.out.println("not connected to the server");
@@ -338,6 +340,27 @@ public class RegisterMe extends Activity{
 			}
 	
 	}
+	
+	public void listeningForMessages() {
+        PacketFilter filter = new AndFilter(new PacketTypeFilter(Message.class));
+        PacketCollector collector = conn.createPacketCollector(filter);
+        while (true) {
+            Packet packet = collector.nextResult();
+            if (packet instanceof Message) {
+                Message message = (Message) packet;
+                if (message != null && message.getBody() != null)
+                    System.out.println("Received message from "
+                            + packet.getFrom() + " : "
+                            + (message != null ? message.getBody() : "NULL"));
+                showDialog.setMessage("Received message from server" + " : "
+                            + (message != null ? message.getBody() : "NULL"))
+				.create()
+				.show();
+                
+                break;
+            }
+        }
+    }
 	
 	@SuppressLint("ShowToast")
 	public void createUserName()
