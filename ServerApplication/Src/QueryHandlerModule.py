@@ -8,6 +8,7 @@ import threading
 import json
 from Models import Query
 from Models import SensorUserRel,Sensor,User
+import DataRequesterModule
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -43,6 +44,7 @@ class QueryProcessor(threading.Thread):
            
         if(self.queryPossible()):
             self.sendAcknowledgement(True)
+            DataRequesterModule.sendRequests(self)
         else:
             self.sendAcknowledgement(False)
             
