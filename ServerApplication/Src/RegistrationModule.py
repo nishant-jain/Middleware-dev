@@ -25,7 +25,7 @@ class RegistrationProcessor(threading.Thread):
             print "Matched Register!"
             self.msgObject = json.loads(self.rMessage['body'])
             self.registerUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
-        else:
+        elif str(self.rMessage['subject'])  in ('Delete Account'):
             print "Matched DeRegister!"
             self.deRegisterUser(str(self.rMessage['from']).split("@")[0])
         return
