@@ -1,3 +1,6 @@
 .metadata/
 *.pyc
 *.db
+*.class
+*.apk
+*.dex
