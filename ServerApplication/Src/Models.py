@@ -9,7 +9,7 @@ For any DB-related functionality, import this module in your module.
 import peewee
 from peewee import *
 
-""" Making it a in-memory SQLite database for now, before we figure out some centralized way to establish DBs across machines """
+"""" Made it a file to avoid cross-thread issues with in-memory SQLite!"""
 dbObject = SqliteDatabase("firstDB.db", threadlocals=True)
 
 class baseDBModel(Model):

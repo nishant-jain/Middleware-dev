@@ -55,17 +55,22 @@ class QueryProcessor(threading.Thread):
         #if found return True
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
-        ''' #Untested code
-        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(self.queryObject['frequency']<1000/Sensor.minDelay) )
+        #Untested code
+        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
         count=0
         for p in u:
                 count=count+p.users.count()
         #count=User.select().join(Sensor).join(SensorUserRel).where(SensorUserRel.user == SensorUserRel.sensor).count()
+        
+        ''' Possible query to get all users of such sensors in u:
+         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
+         '''
+        
         if(count>self.queryObject['countMin']):
             return True
         else:
             return False
-    '''
+    
     def lookup(self, query):
         ''' To do:
         returns true if the query can be serviced by already available queries in the Query Database
