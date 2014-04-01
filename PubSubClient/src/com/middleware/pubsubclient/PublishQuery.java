@@ -242,7 +242,7 @@ public class PublishQuery extends Activity {
 				+ "\"count\":{\"countMin\":"+ "\""+countMin+ "\""+",\"countMax\":"+ "\""+countMax+ "\""+"}"
 				+"}"
 				+ "</json>";*/
-				
+		
 		System.out.println(query.toString());
 		return query;
 	}
