@@ -10,6 +10,7 @@ from sleekxmpp import ClientXMPP
 
 
 class MessageHandler(ClientXMPP):
+    
 
     def __init__(self, jid, password):
         ClientXMPP.__init__(self, jid, password)

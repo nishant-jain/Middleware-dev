@@ -8,6 +8,8 @@ import threading
 import json
 from Models import Query
 from Models import SensorUserRel,Sensor,User
+import Queue
+
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -15,11 +17,42 @@ class QueryProcessor(threading.Thread):
         self.qMessage = qMessage
         self.queryObject = ""
         self.msgHandler = msgHandler
+        self.q = Queue()
+        self.timeout = 1.0/60.0
+        self.amIDone = False
+        self.queryNo = 0
         
-    ''' This is the method that runs on starting this thread. '''
+        
+    
+    def onThread(self, function, *args, **kwargs):
+        self.q.put((function, args, kwargs))
+        
+    def processMessage(self, msg):
+        ''' The msg object is actually the raw XMPP message object. Parse it yourself!'''
+        newMsg = json.loads(msg['body'])
+        msgType = str(newMsg['msgType'])
+        if msgType=='ProviderResponse':
+            ''' This is a message which gives the response of some provider which we flooded for query results! '''
+            pass
+        elif msgType=='ProviderData':
+            ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
+            pass
+            
+    ''' This is the method that runs on starting this thread. 
+    EDIT - It is now more of an event loop, listening for more messages and stuff to do for this query
+    until it is finished. Ugly but should work for now.'''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
+        self.queryNo = eval(self.queryObject['queryNo'])
         self.storeQueryInDB(self.queryObject)
+        
+        while True:
+            try:
+                function, args, kwargs = self.q.get(timeout=self.timeout)
+                function(*args, **kwargs)
+            except Queue.Empty:
+                if(self.amIDone):
+                    break
         
     def storeQueryInDB(self, qObj):
         ''' To do:
@@ -66,7 +99,7 @@ class QueryProcessor(threading.Thread):
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
         
-        if(count>self.queryObject['countMin']):
+        if(count>=self.queryObject['countMin']):
             return True
         else:
             return False
@@ -101,6 +134,15 @@ class QueryProcessor(threading.Thread):
 
 def queryparse(msgHandler, msg): #parse queries
     #print msg['body']
+    qno = str(json.loads(msg['body'])['queryNo'])
+    for i in threading.enumerate():
+        if i.name==qno:
+            i.onThread(QueryProcessor.processMessage, msg)
+            return
+        
+    #else, if no current object found, create a new one!
     processor = QueryProcessor(msgHandler, msg)
+    processor.name = qno
     processor.start()
+
 
