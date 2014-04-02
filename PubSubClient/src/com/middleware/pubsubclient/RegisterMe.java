@@ -1,6 +1,7 @@
 package com.middleware.pubsubclient;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import org.jivesoftware.smack.AccountManager;
@@ -34,11 +35,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 
 @SuppressLint("UseValueOf")
@@ -59,12 +63,27 @@ public class RegisterMe extends Activity{
 	Message loginWithServer;
 	boolean accountExists;
 	public static JSONObject obj;
+	Intent intentAcc;
+	Intent intentAR;
+	
+	//Won't be needed later when recording would be done based on queries from server
+	Button startRecording;
+	Button stopRecording;
 
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(null);
 		setContentView(R.layout.activity_register_me);
+		
+		startRecording = (Button)findViewById(R.id.button2);
+		stopRecording = (Button)findViewById(R.id.button3);
+		
+		startRecording.setOnClickListener(startDataRecording);
+		stopRecording.setOnClickListener(stopDataRecording);
+		
+		intentAcc = new Intent(RegisterMe.this, AccReadings.class);
+		intentAR = new Intent(RegisterMe.this, ActivityRecognitionCallingService.class);
 		XMPPConnection.DEBUG_ENABLED=true;
 		showDialog=new Builder(this);
 		//		tv = (TextView)findViewById(R.id.textView1);
@@ -180,6 +199,29 @@ public class RegisterMe extends Activity{
 		}
 	}
 
+	OnClickListener startDataRecording = new OnClickListener() {
+		public void onClick(View v) {
+			
+			Date date = new Date();
+			String mFileName = android.text.format.DateFormat.format("MM-dd-yy_kk-mm-ss",date).toString();
+			File directory = new File(new File(Environment.getExternalStorageDirectory()
+					//+ "/ReadingsAcc/");
+					+ "/DataCollection/").getPath(),"Experiment_"+mFileName+"/");
+			
+			if (!directory.exists()) {
+				directory.mkdirs();
+			}
+			startService(intentAcc);
+			startService(intentAR);
+		}
+	};
+	
+	OnClickListener stopDataRecording = new OnClickListener() {
+		public void onClick(View v) {
+			stopService(intentAcc);
+			stopService(intentAR);
+		}
+	};
 	public void loginToServer()
 	{
 		if(conn.isConnected())

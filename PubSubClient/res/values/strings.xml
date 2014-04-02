@@ -19,6 +19,8 @@
     <string name="rot">Rotation Vector</string>
     <string name="subscribe">Update Subscription</string>
     <string name="pref_user_profile">Subscription Topics</string>
+    <string name="startRecording">Start recording data</string>
+    <string name="stopRecording">Stop recording data</string>
     <string-array name="activity_options">
         <item>Don\'t Care</item>
         <item>On Foot</item>
