@@ -176,14 +176,15 @@ class QueryProcessor(threading.Thread):
         
         return 
     
-    def sendAcknowledgement(self, accepted=True, errMessage=""): 
+    def sendAcknowledgement(self, accepted=True, errMessage=''): 
         toSend = '{"queryAck":'
         if(accepted):
             toSend = toSend + '"accepted"'
         else:
             toSend = toSend + '"denied"'
             
-        toSend = toSend + ', "errMessage": "' + errMessage + '"}'
+        toSend = toSend + ', "errMessage": "' + errMessage
+        toSend = toSend + '", "queryNo":"' + str(self.queryNo) + '"}'
         self.msgHandler.send_message(self.qMessage['from'], toSend)
         
         return 
