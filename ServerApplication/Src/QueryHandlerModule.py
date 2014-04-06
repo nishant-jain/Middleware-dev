@@ -9,7 +9,6 @@ import json
 from Models import Query
 from Models import SensorUserRel,Sensor,User
 import Queue
-import DataRequesterModule
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -21,6 +20,10 @@ class QueryProcessor(threading.Thread):
         self.timeout = 1.0/60.0
         self.amIDone = False
         self.queryNo = 0
+        self.currentCount = 0
+        self.usersServicing = []
+        self.fileLinks = []
+        self.hostName = str(self.qMessage['from']).split("@")[1]
         
         
     
@@ -33,9 +36,31 @@ class QueryProcessor(threading.Thread):
         msgType = str(newMsg['msgType'])
         if msgType=='ProviderResponse':
             ''' This is a message which gives the response of some provider which we flooded for query results! '''
-            pass
+            if(str(newMsg['status'])=='Accepted'):
+                #Party! Request accepted!
+                    
+                u = User.get(User.username==str(msg['from']).split("@")[0])
+                
+                if(self.currentCount >= self.currentCount > eval(self.queryObject['minCount'])):
+                    #We don't need this guy anymore. Send him a not required message.
+                    self.sendProviderConfirmation(u, False)
+                    return
+                
+                self.usersServicing += [u]
+                self.currentCount += 1
+                
+                self.sendProviderConfirmation(u, True)
+                
+                if(self.currentCount >= eval(self.queryObject['minCount'])):
+                    #Send final confirmation to client!
+                    self.sendFinalConfirmation(True)
+                    pass
+            else:
+                #Snobby client, rejected our request. Ignore this guy!
+                pass
         elif msgType=='ProviderData':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
+            
             pass
             
     ''' This is the method that runs on starting this thread. 
@@ -44,8 +69,14 @@ class QueryProcessor(threading.Thread):
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
         self.queryNo = eval(self.queryObject['queryNo'])
-        self.storeQueryInDB(self.queryObject)
+        query_possible = self.storeQueryInDB(self.queryObject)
+        if(query_possible):
+            self.floodProviders()
+        else:
+            print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
+            return 
         
+        ''' we have flooded providers now. Should start listening for messages! '''
         while True:
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
@@ -53,6 +84,40 @@ class QueryProcessor(threading.Thread):
             except Queue.Empty:
                 if(self.amIDone):
                     break
+    
+    def sendProviderConfirmation(self, user, confirmed):
+        if(confirmed):
+            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+        else:
+            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Already got the required providers! :)"}'
+        self.msgHandler.send_message(mto=(str(user.username) + "@" + self.hostName), mbody=toSend, msubject='Final Confirmation')
+        print "Provider Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed) + " to User: " + str(user.username)
+       
+    
+    def sendFinalConfirmation(self, confirmed):
+        if(confirmed):
+            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+        else:
+            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Not enough providers currently!"}'
+        self.msgHandler.send_message(mto=self.qMessage['from'], mbody=toSend, msubject='Final Confirmation')
+        print "Requester Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed)
+        return
+    
+    def floodProviders(self):
+        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
+        z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
+        ''' Now z has all the users we have to send a request to! '''
+        
+        toSend = '{"queryNo":"' + str(self.queryNo) + '","sensorType":"' + str(self.queryObject['dataReqd']) + '","frequency":"' + str(self.queryObject['frequency']) + '",'
+        toSend = toSend + '"Activity":"' + str(self.queryObject['Activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "endTime":' + str(self.queryObject['endTime']) + '"}'
+         
+        #self.msgHandler.send_message(self.qMessage['from'], toSend)
+        serverAppend = '@' + self.hostName
+        
+        for i in z:
+            self.msgHandler.send_message(mto=(str(i.username) + serverAppend), mbody=toSend, msubject="DataRequest")
+
+        ''' Query requests sent out; should now start listening for replies! '''
         
     def storeQueryInDB(self, qObj):
         ''' To do:
@@ -76,13 +141,10 @@ class QueryProcessor(threading.Thread):
            
         if(self.queryPossible()):
             self.sendAcknowledgement(True)
-            DataRequesterModule.sendRequests(self)
+            return True
         else:
             self.sendAcknowledgement(False)
-            
-            
-            
-        return 
+            return False
     
     def queryPossible(self):
         '''Check from the database if we even have the requested number of devices to service the query.'''
@@ -101,6 +163,7 @@ class QueryProcessor(threading.Thread):
          '''
         
         if(count>=self.queryObject['countMin']):
+            #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
             return True
         else:
             return False
@@ -142,6 +205,7 @@ def queryparse(msgHandler, msg): #parse queries
             return
         
     #else, if no current object found, create a new one!
+    print "Creating new Query thread."
     processor = QueryProcessor(msgHandler, msg)
     processor.name = qno
     processor.start()
