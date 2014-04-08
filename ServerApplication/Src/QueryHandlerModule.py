@@ -204,7 +204,7 @@ def queryparse(msgHandler, msg): #parse queries
         if i.name==qno:
             i.onThread(QueryProcessor.processMessage, msg)
             return
-        
+    '''TODO :need to check for msgs related to threads/queries which have been already terminated'''
     #else, if no current object found, create a new one!
     print "Creating new Query thread."
     processor = QueryProcessor(msgHandler, msg)
