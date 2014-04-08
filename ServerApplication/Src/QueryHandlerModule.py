@@ -74,6 +74,7 @@ class QueryProcessor(threading.Thread):
             self.floodProviders()
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
+            self.amIDone = True
             return 
         
         ''' we have flooded providers now. Should start listening for messages! '''
