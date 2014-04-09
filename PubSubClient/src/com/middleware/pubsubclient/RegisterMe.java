@@ -65,10 +65,15 @@ public class RegisterMe extends Activity{
 	public static JSONObject obj;
 	Intent intentAcc;
 	Intent intentAR;
+	Intent intentRequestListener;
+	Intent intentPublishQuery;
 	
 	//Won't be needed later when recording would be done based on queries from server
 	Button startRecording;
 	Button stopRecording;
+	
+	Button stopListeningtoRequests;
+	Button publishQueryButton;
 
 	@SuppressLint("ShowToast")
 	@Override
@@ -77,13 +82,20 @@ public class RegisterMe extends Activity{
 		setContentView(R.layout.activity_register_me);
 		
 		startRecording = (Button)findViewById(R.id.button2);
-		stopRecording = (Button)findViewById(R.id.button3);
-		
+		stopRecording = (Button)findViewById(R.id.button3);	
 		startRecording.setOnClickListener(startDataRecording);
 		stopRecording.setOnClickListener(stopDataRecording);
 		
+		stopListeningtoRequests = (Button)findViewById(R.id.button4);
+		stopListeningtoRequests.setOnClickListener(stopListening);
+		publishQueryButton = (Button)findViewById(R.id.button1);
+		publishQueryButton.setOnClickListener(publishQuery);
+		
 		intentAcc = new Intent(RegisterMe.this, AccReadings.class);
 		intentAR = new Intent(RegisterMe.this, ActivityRecognitionCallingService.class);
+		intentRequestListener = new Intent(RegisterMe.this, RequestListener.class);
+		intentPublishQuery = new Intent(getApplicationContext(),PublishQuery.class);
+		
 		XMPPConnection.DEBUG_ENABLED=true;
 		showDialog=new Builder(this);
 		//		tv = (TextView)findViewById(R.id.textView1);
@@ -199,6 +211,12 @@ public class RegisterMe extends Activity{
 		}
 	}
 
+	OnClickListener publishQuery = new OnClickListener()
+	{
+		public void onClick(View v) {
+			startActivity(intentPublishQuery);
+		}
+	};
 	OnClickListener startDataRecording = new OnClickListener() {
 		public void onClick(View v) {
 			
@@ -222,6 +240,13 @@ public class RegisterMe extends Activity{
 			stopService(intentAR);
 		}
 	};
+	
+	OnClickListener stopListening = new OnClickListener() {
+		public void onClick(View v) {
+			stopService(intentRequestListener);
+			
+		}
+	};
 	public void loginToServer()
 	{
 		if(conn.isConnected())
@@ -237,7 +262,7 @@ public class RegisterMe extends Activity{
 				.setMessage("connected to the server")
 				.create()
 				.show();
-
+				startService(intentRequestListener);
 
 			} catch (XMPPException e) {
 				// TODO Auto-generated catch block
@@ -373,7 +398,7 @@ public class RegisterMe extends Activity{
 					showDialog.setMessage("Sensor information sent to the server.")
 					.create()
 					.show();
-					listeningForMessages();
+					//listeningForMessages();
 				}
 				catch(Exception e)
 				{
@@ -403,7 +428,7 @@ public class RegisterMe extends Activity{
 
 	}
 
-	public void listeningForMessages() {
+	/*public void listeningForMessages() {
 		PacketFilter filter = new AndFilter(new PacketTypeFilter(Message.class));
 		PacketCollector collector = conn.createPacketCollector(filter);
 		int k=0;
@@ -424,8 +449,8 @@ public class RegisterMe extends Activity{
 			}
 			k++;
 		}
-	}
-
+	}*/
+	
 	@SuppressLint("ShowToast")
 	public void createUserName()
 	{		
@@ -446,9 +471,4 @@ public class RegisterMe extends Activity{
 
 	}
 
-	public void launchIntent(View v)
-	{
-		Intent i=new Intent(getApplicationContext(),PublishQuery.class);		
-		startActivity(i);
-	}
 }

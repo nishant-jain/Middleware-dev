@@ -51,6 +51,7 @@
         <service
             android:name = ".AccReadings">
         </service>
+        <service android:name="com.middleware.pubsubclient.RequestListener"></service>
         <service android:name="com.middleware.pubsubclient.ActivityRecognitionCallingService"></service>
         <service android:name="com.middleware.pubsubclient.ActivityRecognitionService"></service>
     </application>
