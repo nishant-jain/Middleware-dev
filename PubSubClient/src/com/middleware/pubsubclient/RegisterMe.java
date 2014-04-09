@@ -140,15 +140,17 @@ public class RegisterMe extends Activity{
 
 
 		obj=new JSONObject();
+		int count=0;
 		for(Sensor s : deviceSensors)
 		{
 			JSONArray array=new JSONArray();
 			try {
+				array.put(findType(s.getType()));
 				array.put(s.getMaximumRange());
 				array.put(s.getMinDelay());
 				array.put((Number)s.getPower());
 				array.put((Number)s.getResolution());
-				obj.put(findType(s.getType()),array);
+				obj.put("sensor"+(count++),array);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -158,18 +160,28 @@ public class RegisterMe extends Activity{
 
 		System.out.println("Checking for play services");
 		int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-		if (status == ConnectionResult.SUCCESS) {
-			System.out.println("Play services present");
+		///JSONArray array=new JSONArray();
+		
 			try {
-				JSONArray array=new JSONArray();
-				array.put("present");
-				obj.put("Activity Recognition", array);
+				if (status == ConnectionResult.SUCCESS) {
+					System.out.println("Play services present");
+				//array.put("present");
+				obj.put("ActivityRecognition", "present");}
+				else
+					obj.put("ActivityRecognition", "absent");
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-		}	  
+		//DownloadAllowed for now by default
+			try {
+				obj.put("DownloadAllowed", "yes");
+			} catch (JSONException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+		
 
 		try {
 			obj.put("noSensors", obj.length());

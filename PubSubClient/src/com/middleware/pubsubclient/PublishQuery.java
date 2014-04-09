@@ -269,8 +269,8 @@ public class PublishQuery extends Activity {
 			System.out.println("Test node created");			
 			testNode.send(new PayloadItem<SimplePayload>(RegisterMe.username+System.currentTimeMillis(), new SimplePayload("query", "pubsub:client:query", "<book xmlns='pubsub:test:book'><title>Lord of the Rings</title></book>")));*/
 			
-			Message query2 = new Message("server@103.25.231.23",Message.Type.normal);
-			query2.setSubject("query");
+			Message query2 = new Message("server@103.25.231.23",Message.Type.chat);
+			query2.setSubject("Query");
 			query2.setBody(query.toString());
 			RegisterMe.conn.sendPacket(query2);	
 			showMessage.setTitle("Query Submission")

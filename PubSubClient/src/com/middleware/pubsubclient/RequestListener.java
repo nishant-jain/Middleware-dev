@@ -38,17 +38,22 @@ public class RequestListener extends Service{
 		//collector = RegisterMe.conn.createPacketCollector(filter);
 	}
 	
+	void actOnMessage(Message message)
+	{
+		if(message.getSubject().equals("DataRequest")){
+			
+		}
+		
+		else if(message.getSubject().equals("FinalConfirmation"))
+		{
+			
+		}
+	}
+	
 	@Override
 	public int onStartCommand(Intent intent_received, int flags, int startId) {
 		myID = 1234;
-		/*Packet packet = collector.nextResult();
-		if (packet instanceof Message) {
-			Message message = (Message) packet;
-			if (message != null && message.getBody() != null)
-				System.out.println("Received message from "
-						+ packet.getFrom() + " : "
-						+ (message != null ? message.getBody() : "NULL"));
-		}*/
+		
 		listener = new PacketListener() {
 		    @Override
 		    public void processPacket(Packet packet) {
@@ -56,27 +61,17 @@ public class RequestListener extends Service{
 		        if (message.getBody() != null) {
 		            String from = StringUtils.parseBareAddress(message.getFrom());
 		            String body = message.getBody();
-		            System.out.println("Message Received from "+from+": "+body);
+		            String subject = message.getSubject();
+		            System.out.println("Message Received from "+from+": "+subject+"\n"+body);
+		            System.out.println("Will act on message now");
+		            actOnMessage(message);
 		        }
 		    }
 		};
 		
 		RegisterMe.conn.addPacketListener(listener, filter);
 		
-		/*connection.addPacketListener(new PacketListener() {
-		    @Override
-		    public void processPacket(Packet packet) {
-		        Message message = (Message) packet;
-		        if (message.getBody() != null) {
-		            String from = StringUtils.parseBareAddress(message.getFrom());
-		            Intent intent = new Intent();
-		            intent.setAction("your.package.XMPP_PACKET_RECEIVED");
-		            intent.putExtra("from", from);
-		            intent.putExtra("body", message.getBody());
-		            context.sendBroadcast(i);
-		        }
-		    }
-		}, packetFilter);*/
+		
 		
 		Intent intent = new Intent(this, RequestListener.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
