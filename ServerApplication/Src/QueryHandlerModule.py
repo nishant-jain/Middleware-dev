@@ -74,6 +74,7 @@ class QueryProcessor(threading.Thread):
             self.floodProviders()
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
+            self.amIDone = True
             return 
         
         ''' we have flooded providers now. Should start listening for messages! '''
@@ -123,28 +124,38 @@ class QueryProcessor(threading.Thread):
         ''' To do:
         Parse parameters of query from the received msg and store it in DB
         '''
-        q = Query()
-        q.username = qObj['username']
-        q.queryNo = eval(qObj['queryNo'])
-        q.dataReqd = qObj['dataReqd']
-        q.frequency = eval(qObj['frequency'])
-        q.Latitude = eval(qObj['latitude'])
-        q.Longitude = eval(qObj['longitude'])
-#         q.fromtime = qObj['fromTime']
-#         q.toTime = qObj['toTime']
-#         q.expiryTime = qObj['expiryTime']
-        q.countMin = eval(qObj['countMin'])
-        q.countMax = eval(qObj['countMax'])
-        q.countReceived = 0
+        foundFlag = False
+        try:
+            uname = User.get(User.username==str(self.qMessage['from']).split("@")[0])
+            foundFlag = True
+        except User.DoesNotExist:
+            print "User not in DB"
         
-        q.save()    
-           
-        if(self.queryPossible()):
-            self.sendAcknowledgement(True)
-            return True
-        else:
-            self.sendAcknowledgement(False)
-            return False
+        if foundFlag:
+            q = Query()
+            q.username = uname
+            q.queryNo = eval(str(qObj['queryNo']))
+            q.dataReqd = str(qObj['dataReqd'])
+            q.frequency = eval(str(qObj['frequency']))
+            q.Latitude = eval(str(qObj['latitude']))
+            q.Longitude = eval(str(qObj['longitude']))
+            #q.fromTime = eval(qObj['fromTime'])
+            #q.toTime = eval(qObj['toTime'])
+            #q.expiryTime = eval(qObj['expiryTime'])
+            q.Location = eval(str(qObj['location']))
+            q.Activity = eval(str(qObj['activity']))
+            q.countMin = eval(str(qObj['countMin']))
+            q.countMax = eval(str(qObj['countMax']))
+            q.countReceived = 0
+            
+            q.save()    
+                   
+            if(self.queryPossible()):
+                self.sendAcknowledgement(True)
+                return True
+            else:
+                self.sendAcknowledgement(False)
+                return False
     
     def queryPossible(self):
         '''Check from the database if we even have the requested number of devices to service the query.'''
