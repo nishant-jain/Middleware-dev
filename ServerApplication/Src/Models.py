@@ -29,6 +29,8 @@ class Sensor(baseDBModel):
 class User(baseDBModel):
     username = CharField()
     RegistrationDate = DateTimeField()
+    ActivityRecognition = BooleanField()
+    DownloadAllowed = BooleanField()
     
 class SensorUserRel(baseDBModel):
     user = ForeignKeyField(User, related_name="sensors")
@@ -49,6 +51,7 @@ class Query(baseDBModel):
     countMin= IntegerField()
     countMax= IntegerField()
     countReceived = IntegerField()
+
  
 def connect(): 
     print "Connecting!"

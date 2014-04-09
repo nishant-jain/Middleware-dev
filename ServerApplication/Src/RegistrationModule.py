@@ -40,7 +40,15 @@ class RegistrationProcessor(threading.Thread):
             u = User.get(User.username==userName)
             foundFlag = True
         except User.DoesNotExist:
-            u = User(username=str(userName), RegistrationDate=datetime.datetime.now())
+            if str(msgObject['ActivityRecognition'])=='present':
+                activity = True
+            else:
+                activity = False
+            if str(msgObject['DownloadAllowed'])=='yes':
+                download = True
+            else:
+                download = False
+            u = User(username=str(userName), RegistrationDate=datetime.datetime.now(), ActivityRecognition=activity, DownloadAllowed=download)
             u.save()
         print "User Saved"
         
@@ -54,16 +62,16 @@ class RegistrationProcessor(threading.Thread):
                     
         
         sensorQueue = []
-        #numSensor = eval(msgObject['noSensors'])
-        for i in msgObject.keys():
-            if i not in ('noSensors'):
-                try:
-                    s = Sensor.get(Sensor.SensorType==str(i), Sensor.maxRange==eval(str(msgObject[i][0])), Sensor.minDelay == eval(str(msgObject[i][1])), Sensor.power == eval(str(msgObject[i][2])), Sensor.resolution==eval(str(msgObject[i][3])))
-                except Sensor.DoesNotExist:
-                    s = Sensor(name="temp", SensorType=str(i), maxRange=eval(str(msgObject[i][0])), minDelay = eval(str(msgObject[i][1])), power = eval(str(msgObject[i][2])), resolution=eval(str(msgObject[i][3])))
-                    s.save()
-                sensorQueue += [s]
-                
+        numSensor = eval(msgObject['noSensors'])
+        for i in range(1, numSensor+1):
+            sName = "sensor" + str(i)
+            try:
+                s = Sensor.get(Sensor.SensorType==str(msgObject[sName][0]), Sensor.maxRange==eval(str(msgObject[sName][1])), Sensor.minDelay == eval(str(msgObject[sName][2])), Sensor.power == eval(str(msgObject[sName][3])), Sensor.resolution==eval(str(msgObject[sName][4])))
+            except Sensor.DoesNotExist:
+                s = Sensor(name="temp", SensorType=str(msgObject[sName][0]), maxRange=eval(str(msgObject[sName][1])), minDelay = eval(str(msgObject[sName][2])), power = eval(str(msgObject[sName][3])), resolution=eval(str(msgObject[sName][4])))
+                s.save()
+            sensorQueue += [s]
+            
             
         for s in sensorQueue:
             sur = SensorUserRel(user=u, sensor=s)
