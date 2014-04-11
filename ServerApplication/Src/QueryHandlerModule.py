@@ -78,13 +78,12 @@ class QueryProcessor(threading.Thread):
             return 
         
         ''' we have flooded providers now. Should start listening for messages! '''
-        while True:
+        while (self.amIDone==False):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
             except Queue.Empty:
-                if(self.amIDone):
-                    break
+                pass
     
     def sendProviderConfirmation(self, user, confirmed):
         if(confirmed):
