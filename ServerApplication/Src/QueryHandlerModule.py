@@ -10,13 +10,16 @@ from Models import Query
 from Models import SensorUserRel,Sensor,User
 import Queue
 
+'''Constants!'''
+PROVIDER_REQUEST_TIMEOUT = 60.0 #60 seconds!
+
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
         super(QueryProcessor, self).__init__()
         self.qMessage = qMessage
         self.queryObject = ""
         self.msgHandler = msgHandler
-        self.q = Queue()
+        self.q = Queue.Queue()
         self.timeout = 1.0/60.0
         self.amIDone = False
         self.queryNo = 0
@@ -29,6 +32,18 @@ class QueryProcessor(threading.Thread):
     
     def onThread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
+        
+    def providerRequestTimeout(self):
+        if(self.currentCount < eval(self.queryObject['minCount'])):
+            #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
+            self.sendFinalConfirmation(False)
+            self.amIDone = True #Causes the thread to now exit!
+            return
+
+        
+    def putProviderRequestTimeoutOnThread(self):
+        self.onThread(self.providerRequestTimeout)
+
         
     def processMessage(self, msg):
         ''' The msg object is actually the raw XMPP message object. Parse it yourself!'''
@@ -76,6 +91,9 @@ class QueryProcessor(threading.Thread):
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
             self.amIDone = True
             return 
+        
+        ''' Start a timer to check for enough providers after timeout! '''
+        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread)
         
         ''' we have flooded providers now. Should start listening for messages! '''
         while (self.amIDone==False):
