@@ -9,8 +9,8 @@ For any DB-related functionality, import this module in your module.
 import peewee
 from peewee import *
 
-"""" Made it a file to avoid cross-thread issues with in-memory SQLite!"""
-dbObject = SqliteDatabase("firstDB.db", threadlocals=True)
+''' A MySQLDatabase object for our transactions. Currently threadLocals = False, lets see how it goes '''
+dbObject = MySQLDatabase("collabmid", user='collabmiduser', passwd='collabmidpassword')
 
 class baseDBModel(Model):
     """A base model that will use our Backend database"""
@@ -20,37 +20,51 @@ class baseDBModel(Model):
 
 class Sensor(baseDBModel):
     name = TextField()
-    SensorType = CharField()
-    maxRange = DoubleField()
-    minDelay = DoubleField()
-    power = DoubleField()
-    resolution = DoubleField()
+    SensorType = CharField(index=True)
+    maxRange = DoubleField(index=True)
+    minDelay = DoubleField(index=True)
+    power = DoubleField(index=True)
+    resolution = DoubleField(index=True)
+    
+    class Meta:
+        indexes = (
+                (('SensorType', 'maxRange', 'minDelay', 'power', 'resolution'), True),
+            )
      
 class User(baseDBModel):
-    username = CharField()
+    username = CharField(unique=True)
     RegistrationDate = DateTimeField()
-    ActivityRecognition = BooleanField()
-    DownloadAllowed = BooleanField()
+    ActivityRecognition = BooleanField(index=True)
+    DownloadAllowed = BooleanField(index=True)
     
 class SensorUserRel(baseDBModel):
     user = ForeignKeyField(User, related_name="sensors")
-    sensor = ForeignKeyField(Sensor, related_name="users")   
+    sensor = ForeignKeyField(Sensor, related_name="users")
+    class Meta:
+        indexes = (
+                (('user','sensor'), True),
+            )       
     
 class Query(baseDBModel):
     username = ForeignKeyField(User, related_name="queries")
-    queryNo= BigIntegerField()
+    queryNo= BigIntegerField(unique=True)
     dataReqd= CharField()
     frequency = IntegerField() #in Hertz
     Activity= TextField()
     Location = TextField()
     Latitude= DoubleField()
     Longitude= DoubleField()
-    fromTime= DateTimeField()
-    toTime= DateTimeField()
-    expiryTime= DateTimeField()
+    fromTime= DateTimeField(index=True)
+    toTime= DateTimeField(index=True)
+    expiryTime= DateTimeField(index=True)
     countMin= IntegerField()
     countMax= IntegerField()
     countReceived = IntegerField()
+    
+    class Meta:
+        indexes = (
+                (('fromTime', 'toTime', 'expiryTime'), False),
+            )    
 
  
 def connect(): 
