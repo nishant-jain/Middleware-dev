@@ -130,10 +130,7 @@ class QueryProcessor(threading.Thread):
             foundFlag = True
         except User.DoesNotExist:
             print "User not in DB"
-<<<<<<< HEAD
             return False
-=======
->>>>>>> FETCH_HEAD
         
         if foundFlag:
             q = Query()
