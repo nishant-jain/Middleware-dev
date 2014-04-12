@@ -11,7 +11,7 @@ from Models import SensorUserRel,Sensor,User
 import Queue
 
 '''Constants!'''
-PROVIDER_REQUEST_TIMEOUT = 60.0 #60 seconds!
+PROVIDER_REQUEST_TIMEOUT = 120.0 #60 seconds!
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -93,7 +93,7 @@ class QueryProcessor(threading.Thread):
             return 
         
         ''' Start a timer to check for enough providers after timeout! '''
-        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread)
+        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
         
         ''' we have flooded providers now. Should start listening for messages! '''
         while (self.amIDone==False):
