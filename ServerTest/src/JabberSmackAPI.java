@@ -71,7 +71,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 			
 			obj.put("ActivityRecognition", "present");
 			obj.put("DownloadAllowed", "yes");
-			obj.put("noSensors", count-1);
+			obj.put("noSensors", count-1);	
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -175,19 +175,12 @@ public class JabberSmackAPI extends Thread implements MessageListener{
   //  BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     //String msg;
  
- 
+    	JabberSmackAPI T1;
     // turn on the enhanced debugger
     XMPPConnection.DEBUG_ENABLED = true;
-    JabberSmackAPI T1 = new JabberSmackAPI("user1","1234");
-    T1.start();
-    JabberSmackAPI T2 = new JabberSmackAPI("user2","1234");
-    T2.start();
-    JabberSmackAPI T3 = new JabberSmackAPI("user3","1234");
-    T3.start();
-    JabberSmackAPI T4 = new JabberSmackAPI("user4","1234");
-    T4.start();
-    JabberSmackAPI T5 = new JabberSmackAPI("user5","1234");
-    T5.start();
+    for(int i=0;i<10;i++){
+    T1 = new JabberSmackAPI("user"+i,"1234");
+    T1.start();}
     
     // Enter your login information here
     //c.login("new_user2", "1234");
