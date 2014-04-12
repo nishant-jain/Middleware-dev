@@ -4,4 +4,7 @@
 *.class
 *.apk
 *.dex
+*.project
+*.classpath
+ServerTest/.settings/
 *~

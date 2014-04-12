@@ -9,6 +9,10 @@ import json
 from Models import Query
 from Models import SensorUserRel,Sensor,User
 import Queue
+import datetime
+
+'''Constants!'''
+PROVIDER_REQUEST_TIMEOUT = 120.0 #60 seconds!
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -16,7 +20,7 @@ class QueryProcessor(threading.Thread):
         self.qMessage = qMessage
         self.queryObject = ""
         self.msgHandler = msgHandler
-        self.q = Queue()
+        self.q = Queue.Queue()
         self.timeout = 1.0/60.0
         self.amIDone = False
         self.queryNo = 0
@@ -30,6 +34,18 @@ class QueryProcessor(threading.Thread):
     def onThread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
         
+    def providerRequestTimeout(self):
+        if(self.currentCount < eval(str(self.queryObject['minCount']))):
+            #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
+            self.sendFinalConfirmation(False)
+            self.amIDone = True #Causes the thread to now exit!
+            return
+
+        
+    def putProviderRequestTimeoutOnThread(self):
+        self.onThread(self.providerRequestTimeout)
+
+        
     def processMessage(self, msg):
         ''' The msg object is actually the raw XMPP message object. Parse it yourself!'''
         newMsg = json.loads(msg['body'])
@@ -41,7 +57,7 @@ class QueryProcessor(threading.Thread):
                     
                 u = User.get(User.username==str(msg['from']).split("@")[0])
                 
-                if(self.currentCount >= self.currentCount > eval(self.queryObject['minCount'])):
+                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
                     #We don't need this guy anymore. Send him a not required message.
                     self.sendProviderConfirmation(u, False)
                     return
@@ -51,7 +67,7 @@ class QueryProcessor(threading.Thread):
                 
                 self.sendProviderConfirmation(u, True)
                 
-                if(self.currentCount >= eval(self.queryObject['minCount'])):
+                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
                     #Send final confirmation to client!
                     self.sendFinalConfirmation(True)
                     pass
@@ -68,7 +84,7 @@ class QueryProcessor(threading.Thread):
     until it is finished. Ugly but should work for now.'''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
-        self.queryNo = eval(self.queryObject['queryNo'])
+        self.queryNo = eval(str(self.queryObject['queryNo']))
         query_possible = self.storeQueryInDB(self.queryObject)
         if(query_possible):
             self.floodProviders()
@@ -77,14 +93,16 @@ class QueryProcessor(threading.Thread):
             self.amIDone = True
             return 
         
+        ''' Start a timer to check for enough providers after timeout! '''
+        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
+        
         ''' we have flooded providers now. Should start listening for messages! '''
-        while True:
+        while (self.amIDone==False):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
             except Queue.Empty:
-                if(self.amIDone):
-                    break
+                pass
     
     def sendProviderConfirmation(self, user, confirmed):
         if(confirmed):
@@ -105,7 +123,7 @@ class QueryProcessor(threading.Thread):
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
         ''' Now z has all the users we have to send a request to! '''
         
@@ -140,9 +158,9 @@ class QueryProcessor(threading.Thread):
             q.frequency = eval(str(qObj['frequency']))
             q.Latitude = eval(str(qObj['latitude']))
             q.Longitude = eval(str(qObj['longitude']))
-            #q.fromTime = eval(qObj['fromTime'])
-            #q.toTime = eval(qObj['toTime'])
-            #q.expiryTime = eval(qObj['expiryTime'])
+            q.fromTime = datetime.datetime.fromtimestamp(eval(str(qObj['fromTime'])))
+            q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime'])))
+            q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime'])))
             q.Location = eval(str(qObj['location']))
             q.Activity = eval(str(qObj['activity']))
             q.countMin = eval(str(qObj['countMin']))
@@ -164,7 +182,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
         count=0
         for p in u:
                 count=count+p.users.count()
@@ -174,7 +192,7 @@ class QueryProcessor(threading.Thread):
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
         
-        if(count>=self.queryObject['countMin']):
+        if(count>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
             return True
         else:

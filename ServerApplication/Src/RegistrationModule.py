@@ -62,11 +62,20 @@ class RegistrationProcessor(threading.Thread):
                     
         
         sensorQueue = []
+<<<<<<< HEAD
         numSensor = eval(str(msgObject['noSensors']))
         for i in range(1, numSensor+1):
             sName = "sensor" + str(i)
             try:
                 s = Sensor.get(Sensor.SensorType==str(msgObject[sName][0]), Sensor.maxRange==eval(str(msgObject[sName][1])), Sensor.minDelay == eval(str(msgObject[sName][2])), Sensor.power == eval(str(msgObject[sName][3])), Sensor.resolution==eval(str(msgObject[sName][4])))
+=======
+        numSensor = eval(msgObject['noSensors'])
+        for i in range(1, numSensor+1):
+            ''' TODO: Check for fields to be empty before parsing them with eval! '''
+            sName = "sensor" + str(i)
+            try:
+                s = Sensor.get(Sensor.SensorType==str(msgObject[sName][0]), Sensor.maxRange==eval(str(msgObject[sName][1])), Sensor.minDelay==eval(str(msgObject[sName][2])), Sensor.power==eval(str(msgObject[sName][3])), Sensor.resolution==eval(str(msgObject[sName][4])))
+>>>>>>> da1995835afb7bed0d89bab678fb6ffe7a85e1fe
             except Sensor.DoesNotExist:
                 s = Sensor(name="temp", SensorType=str(msgObject[sName][0]), maxRange=eval(str(msgObject[sName][1])), minDelay = eval(str(msgObject[sName][2])), power = eval(str(msgObject[sName][3])), resolution=eval(str(msgObject[sName][4])))
                 s.save()
