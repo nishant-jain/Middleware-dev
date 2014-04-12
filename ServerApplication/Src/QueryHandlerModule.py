@@ -9,6 +9,7 @@ import json
 from Models import Query
 from Models import SensorUserRel,Sensor,User
 import Queue
+import datetime
 
 '''Constants!'''
 PROVIDER_REQUEST_TIMEOUT = 120.0 #60 seconds!
@@ -157,9 +158,9 @@ class QueryProcessor(threading.Thread):
             q.frequency = eval(str(qObj['frequency']))
             q.Latitude = eval(str(qObj['latitude']))
             q.Longitude = eval(str(qObj['longitude']))
-            #q.fromTime = eval(qObj['fromTime'])
-            #q.toTime = eval(qObj['toTime'])
-            #q.expiryTime = eval(qObj['expiryTime'])
+            q.fromTime = datetime.datetime.fromtimestamp(eval(str(qObj['fromTime'])))
+            q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime'])))
+            q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime'])))
             q.Location = eval(str(qObj['location']))
             q.Activity = eval(str(qObj['activity']))
             q.countMin = eval(str(qObj['countMin']))
