@@ -35,7 +35,7 @@ class QueryProcessor(threading.Thread):
         self.q.put((function, args, kwargs))
         
     def providerRequestTimeout(self):
-        if(self.currentCount < eval(self.queryObject['minCount'])):
+        if(self.currentCount < eval(str(self.queryObject['minCount']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
             self.amIDone = True #Causes the thread to now exit!
@@ -57,7 +57,7 @@ class QueryProcessor(threading.Thread):
                     
                 u = User.get(User.username==str(msg['from']).split("@")[0])
                 
-                if(self.currentCount >= self.currentCount > eval(self.queryObject['minCount'])):
+                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
                     #We don't need this guy anymore. Send him a not required message.
                     self.sendProviderConfirmation(u, False)
                     return
@@ -67,7 +67,7 @@ class QueryProcessor(threading.Thread):
                 
                 self.sendProviderConfirmation(u, True)
                 
-                if(self.currentCount >= eval(self.queryObject['minCount'])):
+                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
                     #Send final confirmation to client!
                     self.sendFinalConfirmation(True)
                     pass
@@ -84,7 +84,7 @@ class QueryProcessor(threading.Thread):
     until it is finished. Ugly but should work for now.'''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
-        self.queryNo = eval(self.queryObject['queryNo'])
+        self.queryNo = eval(str(self.queryObject['queryNo']))
         query_possible = self.storeQueryInDB(self.queryObject)
         if(query_possible):
             self.floodProviders()
@@ -123,7 +123,7 @@ class QueryProcessor(threading.Thread):
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
         ''' Now z has all the users we have to send a request to! '''
         
@@ -182,7 +182,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((self.queryObject['dataReqd']== Sensor.SensorType)and(eval(self.queryObject['frequency'])<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
         count=0
         for p in u:
                 count=count+p.users.count()
@@ -192,7 +192,7 @@ class QueryProcessor(threading.Thread):
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
         
-        if(count>=self.queryObject['countMin']):
+        if(count>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
             return True
         else:
