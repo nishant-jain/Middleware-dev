@@ -9,8 +9,8 @@ For any DB-related functionality, import this module in your module.
 import peewee
 from peewee import *
 
-''' A MySQLDatabase object for our transactions. Currently threadLocals = False, lets see how it goes '''
-dbObject = MySQLDatabase("collabmid", user='collabmiduser', passwd='collabmidpassword')
+''' A MySQLDatabase object for our transactions. Currently threadLocals = True, seems to be needed!'''
+dbObject = MySQLDatabase("collabmid", user='collabmiduser', passwd='collabmidpassword', threadlocals=True)
 
 class baseDBModel(Model):
     """A base model that will use our Backend database"""
