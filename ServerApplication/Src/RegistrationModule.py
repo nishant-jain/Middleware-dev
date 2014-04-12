@@ -62,7 +62,7 @@ class RegistrationProcessor(threading.Thread):
                     
         
         sensorQueue = []
-        numSensor = eval(msgObject['noSensors'])
+        numSensor = eval(str(msgObject['noSensors']))
         for i in range(1, numSensor+1):
             ''' TODO: Check for fields to be empty before parsing them with eval! '''
             sName = "sensor" + str(i)
