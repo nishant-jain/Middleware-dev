@@ -20,9 +20,9 @@ import org.json.JSONObject;
 import java.util.Date;
 
 public class JabberSmackAPI extends Thread implements MessageListener{
-	public static JSONObject obj;
+	private static JSONObject obj;
     XMPPConnection connection;
-    public static AccountManager am;
+    private static AccountManager am;
     private Thread t;
     private String username;
     private String password;
@@ -71,7 +71,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 			
 			obj.put("ActivityRecognition", "present");
 			obj.put("DownloadAllowed", "yes");
-			obj.put("noSensors", obj.length()-2);
+			obj.put("noSensors", count-1);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +80,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 		
 		
 	    if(am.supportsAccountCreation()){
-	    am.createAccount(userName, password);
+	    am.createAccount(userName, password); //to create accounts.Comment out if not needed.
 	    connection.login(userName,password);
 		Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
 		loginWithServer.setSubject("Sensor Capabilities");
@@ -102,9 +102,9 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 	        		if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
 	    	            System.out.println("disconnected ");
 
-	            connection.disconnect();
-	            time=System.currentTimeMillis()-time;
-	            System.out.println("time taken"+time);
+					            connection.disconnect();
+					            time=System.currentTimeMillis()-time;
+					            System.out.println("time taken "+username+" "+time);
 	        	}
 	          }
 	        });
@@ -183,12 +183,12 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     JabberSmackAPI T2 = new JabberSmackAPI("user2","1234");
     T2.start();
     JabberSmackAPI T3 = new JabberSmackAPI("user3","1234");
-    T3.start();/*
+    T3.start();
     JabberSmackAPI T4 = new JabberSmackAPI("user4","1234");
     T4.start();
     JabberSmackAPI T5 = new JabberSmackAPI("user5","1234");
     T5.start();
-    */
+    
     // Enter your login information here
     //c.login("new_user2", "1234");
     
