@@ -80,12 +80,15 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 		
 		
 	    if(am.supportsAccountCreation()){
-	    am.createAccount(userName, password); //to create accounts.Comment out if not needed.
-	    connection.login(userName,password);
-		Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
-		loginWithServer.setSubject("Sensor Capabilities");
-		loginWithServer.setBody(obj.toString());
-		connection.sendPacket(loginWithServer);}
+		    try{am.createAccount(userName, password); //to create accounts.Comment out if not needed.
+		    
+		    }catch(XMPPException e){}
+		    connection.login(userName,password);
+			Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+			loginWithServer.setSubject("Sensor Capabilities");
+			loginWithServer.setBody(obj.toString());
+			connection.sendPacket(loginWithServer);
+	    }
 	    
 	    ChatManager chatmanager = connection.getChatManager();
 	    connection.getChatManager().addChatListener(new ChatManagerListener()
@@ -96,11 +99,11 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 	        {
 	          public void processMessage(Chat chat, Message message)
 	          {
-	        	  System.out.println("Received message: " 
-	                      + (message != null ? message.getBody() : "NULL"));
+	        	//  System.out.println("Received message: " 
+	              //        + (message != null ? message.getBody() : "NULL"));
 	        	
 	        		if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
-	    	            System.out.println("disconnected ");
+	    	            System.out.println("disconnected "+username);
 
 					            connection.disconnect();
 					            time=System.currentTimeMillis()-time;
@@ -177,8 +180,8 @@ public class JabberSmackAPI extends Thread implements MessageListener{
  
     	JabberSmackAPI T1;
     // turn on the enhanced debugger
-    XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<10;i++){
+    //XMPPConnection.DEBUG_ENABLED = true;
+    for(int i=0;i<100;i++){
     T1 = new JabberSmackAPI("user"+i,"1234");
     T1.start();}
     
