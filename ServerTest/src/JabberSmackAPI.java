@@ -139,23 +139,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     	
     }
  
-    public void sendMessage(String message, String to) throws XMPPException
-    {
-    Chat chat = connection.getChatManager().createChat(to, this);
-    chat.sendMessage(message);
-    }
- 
-    public void displayBuddyList()
-    {
-    Roster roster = connection.getRoster();
-    Collection<RosterEntry> entries = roster.getEntries();
- 
-    System.out.println("\n\n" + entries.size() + " buddy(ies):");
-    for(RosterEntry r:entries)
-    {
-    System.out.println(r.getUser());
-    }
-    }
+    
  
     public void disconnect()
     {
@@ -170,45 +154,16 @@ public class JabberSmackAPI extends Thread implements MessageListener{
  
     public static void main(String args[]) throws XMPPException, IOException
     {
-    // declare variables
-//    JabberSmackAPI c = new JabberSmackAPI();
-    //JabberSmackAPI d = new JabberSmackAPI();
-    //JabberSmackAPI e = new JabberSmackAPI();
-
-  //  BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    //String msg;
+   
  
     	JabberSmackAPI T1;
     // turn on the enhanced debugger
-    //XMPPConnection.DEBUG_ENABLED = true;
+    XMPPConnection.DEBUG_ENABLED = true;
     for(int i=0;i<100;i++){
     T1 = new JabberSmackAPI("user"+i,"1234");
     T1.start();}
     
-    // Enter your login information here
-    //c.login("new_user2", "1234");
-    
- /*
-    c.displayBuddyList();
- 
-    System.out.println("-----");
- 
-    System.out.println("Who do you want to talk to? - Type contacts full email address:");
-    String talkTo = br.readLine();
- 
-    System.out.println("-----");
-    System.out.println("All messages will be sent to " + talkTo);
-    System.out.println("Enter your message in the console:");
-    System.out.println("-----\n");
- 
-    while( !(msg=br.readLine()).equals("bye"))
-    {
-        c.sendMessage(msg, talkTo);
-    }
 
-    c.disconnect();
-   
-    System.exit(0);*/
     }
  
 }
