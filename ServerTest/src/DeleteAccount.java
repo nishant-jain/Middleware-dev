@@ -40,20 +40,12 @@ public class DeleteAccount extends Thread implements MessageListener{
 	    connection = new XMPPConnection(config);
 	    connection.connect();
 	    am=connection.getAccountManager();
-	
-		
-		
-		
-	    
-		   
-		    connection.login(userName,password);
-			Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
-			loginWithServer.setSubject("Delete Account");
-			loginWithServer.setBody("Delete this account from the server");
-			connection.sendPacket(loginWithServer);
-	    
-	    
-	    ChatManager chatmanager = connection.getChatManager();
+	    connection.login(userName, password);
+
+			
+	  
+			
+/*	    ChatManager chatmanager = connection.getChatManager();
 	    connection.getChatManager().addChatListener(new ChatManagerListener()
 	    {
 	      public void chatCreated(final Chat chat, final boolean createdLocally)
@@ -64,7 +56,7 @@ public class DeleteAccount extends Thread implements MessageListener{
 	          {
 	        	  System.out.println("Received message: " 
 	                      + (message != null ? message.getBody() : "NULL"));
-	        	
+	        	 
 	        		if(message.getSubject().toString().equalsIgnoreCase("De-Registration Successful!")){
 	    	            System.out.println("disconnected "+username);
 	    	            		try {
@@ -82,12 +74,38 @@ public class DeleteAccount extends Thread implements MessageListener{
 	        });
 	      }
 	    });
-	
-    }
+*/
+			
+     Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
+				 
+
+	public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
+		System.out.println("Received message: " + message); 
+		if(message.getSubject().toString().equalsIgnoreCase("De-Registration Successful!")){
+            System.out.println("disconnected "+username);
+            	try {
+					connection.getAccountManager().deleteAccount();
+				} catch (XMPPException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+            	 time=System.currentTimeMillis()-time;
+		            System.out.println("time taken "+username+" "+time);
+            	}} });
+     Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+		loginWithServer.setSubject("Delete Account");
+		loginWithServer.setBody("Delete this account from the server");
+		connection.sendPacket(loginWithServer);
+	}
+    
     public void run(){
         try {
         	time=System.currentTimeMillis();
 			login(username, password);
+			/*Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+			loginWithServer.setSubject("Delete Account");
+			loginWithServer.setBody("Delete this account from the server");
+			sendMessage(loginWithServer,"server@103.25.231.23" );*/
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -108,7 +126,7 @@ public class DeleteAccount extends Thread implements MessageListener{
     	
     }
  
-    public void sendMessage(String message, String to) throws XMPPException
+    public void sendMessage(Message message, String to) throws XMPPException
     {
     Chat chat = connection.getChatManager().createChat(to, this);
     chat.sendMessage(message);
@@ -148,12 +166,14 @@ public class DeleteAccount extends Thread implements MessageListener{
     //String msg;
  
     	DeleteAccount T1;
+    //	T1 = new DeleteAccount("user2","1234");
+      //  T1.start();
     // turn on the enhanced debugger
-    //XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<10;i++){
+    XMPPConnection.DEBUG_ENABLED = true;
+    for(int i=0;i<100;i++){
     T1 = new DeleteAccount("user"+i,"1234");
     T1.start();}
-    
+   
     // Enter your login information here
     //c.login("new_user2", "1234");
     

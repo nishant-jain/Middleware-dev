@@ -180,7 +180,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
  
     	JabberSmackAPI T1;
     // turn on the enhanced debugger
-    //XMPPConnection.DEBUG_ENABLED = true;
+    XMPPConnection.DEBUG_ENABLED = true;
     for(int i=0;i<100;i++){
     T1 = new JabberSmackAPI("user"+i,"1234");
     T1.start();}
