@@ -96,8 +96,10 @@ class RegistrationProcessor(threading.Thread):
             for i in sensorObjects:
                 i.delete_instance()
             u.delete_instance()
+        except User.DoesNotExist:
+            print 'User ' + userName + ' does not exist. Returning delete ACK anyway.'
         except:
-            print "Something went wrong."
+            print 'Unknown error; returning!'
             return
         
         print str(userName) + " deleted successfully!"
