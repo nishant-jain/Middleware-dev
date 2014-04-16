@@ -69,18 +69,20 @@ public class RequestListener extends Service{
 		//-------------------------------------------------------
 		JSONObject json=new JSONObject();		
 		try {
-			json.put("sensorType", "Accelerometer");
-			json.put("fromTime",1397627067);
-			json.put("toTime", 1397629067);
-			json.put("Activity", "driving");
+			//json.put("sensorType", "Accelerometer");
+			//json.put("fromTime",1397627067);
+			//json.put("toTime", 1397629067);
+			//json.put("Activity", "driving");
 			json.put("queryNo", "123456778");
-			json.put("frequency","2");
+			//json.put("frequency","2");
+			json.put("finalStatus", "Rejected");
+			json.put("errorMessage", "Already got the required providers! :)");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		Message msg= new Message();
-		msg.setSubject("DataRequest");
+		msg.setSubject("FinalConfirmation");
 		msg.setBody(json.toString());
 		actOnMessage(msg);
 		//--------------------------------------------------------
@@ -161,10 +163,59 @@ public class RequestListener extends Service{
 		
 		else if(message.getSubject().equals("FinalConfirmation"))
 		{
-			System.out.println("Decided to serve...selected by the server..now provide the data");
-			// start a service at "start" to collect data
-			AlarmManager scheduler=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
-			//scheduler.set(AlarmManager.RTC_WAKEUP, start.getTime(), pendIntent);
+			//Dealing only with providers now
+			String messageBody=message.getBody();
+			try {
+				JSONObject o = new JSONObject(messageBody);
+				//{“queryNo”: “23121312312”, “finalStatus”: “Confirmed”}  -- collect data in this case
+				boolean collectionStatus= o.getString("finalStatus").equals("Confirmed");
+				if(collectionStatus)
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					builder.setTitle("Thank you");
+					builder.setIcon(R.drawable.ic_launcher);
+					builder.setMessage("Thank you for your cooperation. Data will be collected in the background.");
+					builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					    public void onClick(DialogInterface dialog, int whichButton) {
+					    	//data collection code goes here
+							
+					    	// start a service at "start" to collect data
+							AlarmManager scheduler=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+							//scheduler.set(AlarmManager.RTC_WAKEUP, start.getTime(), pendIntent);
+							dialog.dismiss();
+					    }
+					    });
+					builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+					    public void onClick(DialogInterface dialog, int whichButton) {
+					        dialog.dismiss();
+					    }
+					    });
+					AlertDialog alert = builder.create();
+					alert.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+					alert.show();
+				}
+				//{“queryNo”: “23121312312”, “finalStatus”: “Rejected”, "errorMessage": "Already got the required providers! :)"}
+				else
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(this);
+					builder.setTitle("Thank you");
+					builder.setIcon(R.drawable.ic_launcher);
+					builder.setMessage("Thank you for your cooperation. "+ o.getString("errorMessage"));
+					builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					    public void onClick(DialogInterface dialog, int whichButton) {
+					        dialog.dismiss();
+					    }
+					    });
+					AlertDialog alert = builder.create();
+					alert.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+					alert.show();
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 		}
 	}
 	
