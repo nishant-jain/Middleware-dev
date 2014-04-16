@@ -1,5 +1,8 @@
 package com.middleware.pubsubclient;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ChatManagerListener;
@@ -14,16 +17,25 @@ import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.pubsub.PubSubManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.AlertDialog.Builder;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.os.IBinder;
+import android.os.SystemClock;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 public class RequestListener extends Service{
 	
@@ -32,6 +44,7 @@ public class RequestListener extends Service{
 	PacketListener listener = null;
 	PacketCollector collector = null;
 	public static boolean running=false;
+	PendingIntent pendIntent;
 	@Override
 	public IBinder onBind(Intent arg0) {
 		// TODO Auto-generated method stub
@@ -40,24 +53,114 @@ public class RequestListener extends Service{
 	
 	public void onCreate() {
 		super.onCreate();
+		
 		//filter = new AndFilter(new PacketTypeFilter(Message.class));
 		filter = new MessageTypeFilter(Message.Type.normal);
 		//collector = RegisterMe.conn.createPacketCollector(filter);
 		running=true;
+		Intent intent = new Intent(this, AccReadings.class);
+		//intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		pendIntent = PendingIntent.getService(this, 0, intent, 0);
+		
+		
+		//will not be needed when actually listening for messages
+		//-------------------------------------------------------
+		JSONObject json=new JSONObject();		
+		try {
+			json.put("sensorType", "Accelerometer");
+			json.put("fromTime",1397618820);
+			json.put("toTime", 1397618920);
+			json.put("Activity", "driving");
+			json.put("queryNo", "123456778");
+			json.put("frequency","202");
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Message msg= new Message();
+		msg.setSubject("DataRequest");
+		msg.setBody(json.toString());
+		actOnMessage(msg);
+		//--------------------------------------------------------
+		
+		
 	}
 	
 	void actOnMessage(Message message)
 	{
 		if(message.getSubject().equals("DataRequest"))
 		{
-			System.out.println("New request received..Decide whether to serve it or not");
-			System.out.println("Pop up should be created to ask whether servicing the request or not");
-			//process the request in a different thread
+			final JSONObject confirmation = new JSONObject();
+			long startTime, endTime;
+			final String queryNo;
+			String sensor, frequency, activity;
+			String request= message.getBody();
+			try {
+				JSONObject o = new JSONObject(request);
+				startTime =o.getLong("fromTime");
+				endTime=o.getLong("toTime");
+				queryNo = o.getString("queryNo");
+				sensor = o.getString("sensorType");	//needs to be parsed for multiple sensor types
+				frequency= o.getString("frequency");
+				activity=o.getString("Activity");
+				Date start=new Date(Long.parseLong(String.valueOf(startTime)));
+				Date end=new Date(Long.parseLong(String.valueOf(endTime)));				
+				
+				final Message requestAck = new Message("server@103.25.231.23",Message.Type.chat);
+				requestAck.setSubject("ProviderResponse");
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle("New Request");
+				builder.setIcon(R.drawable.ic_launcher);
+				builder.setMessage("Are you willing to service this request for "+ sensor + " from "+ start.toGMTString() + " to "+ end.toGMTString()+" while you are " + activity +" ?");
+				builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) {
+				        //send confirmation to the server that the request will be serviced
+				    	//{“queryNo”: “2312312112”, “status”: “Accepted”}				    	
+				    	try {
+				    		confirmation.put("queryNo", queryNo);
+							confirmation.put("status", "Accepted");
+							
+							requestAck.setBody(confirmation.toString());
+							RegisterMe.conn.sendPacket(requestAck);	
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				    }
+				    });
+				builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int whichButton) { 
+				    	//else the request is denied by the provider -- send a negative acknowledgment
+				    	//{“queryNo”: “2312312112”, “status”: “Denied”}
+				    	try {
+				    		confirmation.put("queryNo", queryNo);
+							confirmation.put("status", "Denied");
+							
+							requestAck.setBody(confirmation.toString());
+							RegisterMe.conn.sendPacket(requestAck);	
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+				    }
+				});
+				AlertDialog alert = builder.create();
+				alert.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+				alert.show();
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		else if(message.getSubject().equals("FinalConfirmation"))
 		{
 			System.out.println("Decided to serve...selected by the server..now provide the data");
+			// start a service at "start" to collect data
+			AlarmManager scheduler=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+			//scheduler.set(AlarmManager.RTC_WAKEUP, start.getTime(), pendIntent);
 		}
 	}
 	

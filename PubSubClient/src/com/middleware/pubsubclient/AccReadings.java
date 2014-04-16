@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 //import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -21,6 +22,7 @@ import android.os.Environment;
 import android.os.IBinder;
 //import android.text.format.Time;
 //import android.widget.Toast;
+import android.widget.Toast;
 
 public class AccReadings extends Service implements SensorEventListener {
 
@@ -34,6 +36,7 @@ public class AccReadings extends Service implements SensorEventListener {
 		super.onCreate();
 		//Toast.makeText(this, "Service created to record accelerometer data.",
 		//		Toast.LENGTH_SHORT).show();
+		
 	}
 
 	@Override
@@ -47,6 +50,7 @@ public class AccReadings extends Service implements SensorEventListener {
 			return;
 		
 		try {
+			
 			writer.write(event.timestamp+ ","
 					+ event.values[0] + "," + event.values[1] + ","
 					+ event.values[2] + "," +  "\n");
@@ -90,7 +94,7 @@ public class AccReadings extends Service implements SensorEventListener {
 				+ "/DataCollection/").getPath(), "Experiment_" + time + "/");
 
 		file = new File(directory + "/acc.csv");
-
+		Toast.makeText(this, "Recording data", Toast.LENGTH_LONG).show();
 		try {
 			writer = new BufferedWriter(new FileWriter(file, false));
 		} catch (IOException e) {
