@@ -1,5 +1,6 @@
 package com.middleware.pubsubclient;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -34,6 +35,7 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.text.format.DateFormat;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -56,23 +58,23 @@ public class RequestListener extends Service{
 		
 		//filter = new AndFilter(new PacketTypeFilter(Message.class));
 		filter = new MessageTypeFilter(Message.Type.normal);
-		//collector = RegisterMe.conn.createPacketCollector(filter);
+		/*collector = RegisterMe.conn.createPacketCollector(filter);
 		running=true;
 		Intent intent = new Intent(this, AccReadings.class);
 		//intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		pendIntent = PendingIntent.getService(this, 0, intent, 0);
-		
+		*/
 		
 		//will not be needed when actually listening for messages
 		//-------------------------------------------------------
 		JSONObject json=new JSONObject();		
 		try {
 			json.put("sensorType", "Accelerometer");
-			json.put("fromTime",1397618820);
-			json.put("toTime", 1397618920);
+			json.put("fromTime",1397627067);
+			json.put("toTime", 1397629067);
 			json.put("Activity", "driving");
 			json.put("queryNo", "123456778");
-			json.put("frequency","202");
+			json.put("frequency","2");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -103,16 +105,18 @@ public class RequestListener extends Service{
 				sensor = o.getString("sensorType");	//needs to be parsed for multiple sensor types
 				frequency= o.getString("frequency");
 				activity=o.getString("Activity");
-				Date start=new Date(Long.parseLong(String.valueOf(startTime)));
-				Date end=new Date(Long.parseLong(String.valueOf(endTime)));				
+				Date start=new Date(Long.parseLong(String.valueOf(startTime*1000)));
+				Date end=new Date(Long.parseLong(String.valueOf(endTime*1000)));				
 				
 				final Message requestAck = new Message("server@103.25.231.23",Message.Type.chat);
 				requestAck.setSubject("ProviderResponse");
-				
+				SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+				String formattedStart = format.format(start);
+				String formattedEnd = format.format(end);
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setTitle("New Request");
 				builder.setIcon(R.drawable.ic_launcher);
-				builder.setMessage("Are you willing to service this request for "+ sensor + " from "+ start.toGMTString() + " to "+ end.toGMTString()+" while you are " + activity +" ?");
+				builder.setMessage("Are you willing to service this request for "+ sensor + " from "+ formattedStart + " to "+ formattedEnd +" while you are " + activity +" ?");
 				builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 				    public void onClick(DialogInterface dialog, int whichButton) {
 				        //send confirmation to the server that the request will be serviced
