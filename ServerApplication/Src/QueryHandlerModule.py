@@ -12,7 +12,7 @@ import Queue
 import datetime
 
 '''Constants!'''
-PROVIDER_REQUEST_TIMEOUT = 120.0 #60 seconds!
+PROVIDER_REQUEST_TIMEOUT = 120.0 #120 seconds!
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
