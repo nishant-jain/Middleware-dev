@@ -43,21 +43,19 @@ public class DeleteAccount extends Thread implements MessageListener{
 	    connection.login(userName, password);
 	 			
      Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
-				 
-
-	public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
-		System.out.println("Received message: " + message); 
-		if(message.getSubject().toString().equalsIgnoreCase("De-Registration Successful!")){
-            System.out.println("disconnected "+username);
-            	try {
-					connection.getAccountManager().deleteAccount();
-				} catch (XMPPException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            	 time=System.currentTimeMillis()-time;
-		            System.out.println("time taken "+username+" "+time);
-            	}} });
+    	 public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
+			//System.out.println("Received message: " + message); 
+			if(message.getSubject().toString().equalsIgnoreCase("De-Registration Successful!")){
+	            System.out.println("disconnected "+username);
+	            	try {
+						connection.getAccountManager().deleteAccount();
+					} catch (XMPPException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	            	 time=System.currentTimeMillis()-time;
+			            System.out.println("time taken "+username+" "+time);
+	            	}} });
      Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
 		loginWithServer.setSubject("Delete Account");
 		loginWithServer.setBody("Delete this account from the server");

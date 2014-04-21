@@ -1,6 +1,7 @@
 package com.middleware.pubsubclient;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -129,7 +130,6 @@ public class RegisterMe extends Activity{
 		config.setDebuggerEnabled(true);
 		//config=new ConnectionConfiguration("jabber.org",5222);
 		conn=new XMPPConnection(config);
-
 		try {
 			config.setSASLAuthenticationEnabled(true);
 			config.setCompressionEnabled(true);
