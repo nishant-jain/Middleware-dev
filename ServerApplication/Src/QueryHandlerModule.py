@@ -107,18 +107,18 @@ class QueryProcessor(threading.Thread):
     
     def sendProviderConfirmation(self, user, confirmed):
         if(confirmed):
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
         else:
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Already got the required providers! :)"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Already got the required providers! :)"}'
         self.msgHandler.send_message(mto=(str(user.username) + "@" + self.hostName), mbody=toSend, msubject='Final Confirmation')
         print "Provider Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed) + " to User: " + str(user.username)
        
     
     def sendFinalConfirmation(self, confirmed):
         if(confirmed):
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
         else:
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Not enough providers currently!"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Not enough providers currently!"}'
         self.msgHandler.send_message(mto=self.qMessage['from'], mbody=toSend, msubject='Final Confirmation')
         print "Requester Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed)
         return
