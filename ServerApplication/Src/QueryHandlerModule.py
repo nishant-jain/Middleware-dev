@@ -12,7 +12,7 @@ import Queue
 import datetime
 
 '''Constants!'''
-PROVIDER_REQUEST_TIMEOUT = 120.0 #120 seconds!
+PROVIDER_REQUEST_TIMEOUT = 60.0 #60 seconds!
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -35,7 +35,7 @@ class QueryProcessor(threading.Thread):
         self.q.put((function, args, kwargs))
         
     def providerRequestTimeout(self):
-        if(self.currentCount < eval(str(self.queryObject['minCount']))):
+        if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
             self.amIDone = True #Causes the thread to now exit!
@@ -57,7 +57,7 @@ class QueryProcessor(threading.Thread):
                     
                 u = User.get(User.username==str(msg['from']).split("@")[0])
                 
-                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
+                if(self.currentCount >= eval(str(self.queryObject['countMin']))):
                     #We don't need this guy anymore. Send him a not required message.
                     self.sendProviderConfirmation(u, False)
                     return
@@ -67,7 +67,7 @@ class QueryProcessor(threading.Thread):
                 
                 self.sendProviderConfirmation(u, True)
                 
-                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
+                if(self.currentCount >= eval(str(self.queryObject['countMin']))):
                     #Send final confirmation to client!
                     self.sendFinalConfirmation(True)
                     pass
@@ -95,6 +95,7 @@ class QueryProcessor(threading.Thread):
         
         ''' Start a timer to check for enough providers after timeout! '''
         threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
+        print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
         
         ''' we have flooded providers now. Should start listening for messages! '''
         while (self.amIDone==False):
