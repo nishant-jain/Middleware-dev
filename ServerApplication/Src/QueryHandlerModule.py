@@ -35,7 +35,7 @@ class QueryProcessor(threading.Thread):
     def onThread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
         
-    def providerRequestTimeout(self, useless):
+    def providerRequestTimeout(self):
         if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
@@ -240,7 +240,7 @@ def queryparse(msgHandler, msg): #parse queries
 	for i in threading.enumerate():
 		if i.name==qno:
 			print 'Found a thread already for query number: ' + qno
-			i.onThread(QueryProcessor.processMessage, msg)
+			i.onThread(QueryProcessor.processMessage, i, msg)
 			return
 	'''TODO :need to check for msgs related to threads/queries which have been already terminated'''
 	#else, if no current object found, create a new one!
