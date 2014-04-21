@@ -12,7 +12,7 @@ import Queue
 import datetime
 
 '''Constants!'''
-PROVIDER_REQUEST_TIMEOUT = 120.0 #120 seconds!
+PROVIDER_REQUEST_TIMEOUT = 60.0 #60 seconds!
 
 class QueryProcessor(threading.Thread):
     def __init__(self, msgHandler, qMessage):
@@ -28,6 +28,7 @@ class QueryProcessor(threading.Thread):
         self.usersServicing = []
         self.fileLinks = []
         self.hostName = str(self.qMessage['from']).split("@")[1]
+        self.waiting = False
         
         
     
@@ -35,7 +36,7 @@ class QueryProcessor(threading.Thread):
         self.q.put((function, args, kwargs))
         
     def providerRequestTimeout(self):
-        if(self.currentCount < eval(str(self.queryObject['minCount']))):
+        if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
             self.amIDone = True #Causes the thread to now exit!
@@ -49,15 +50,14 @@ class QueryProcessor(threading.Thread):
     def processMessage(self, msg):
         ''' The msg object is actually the raw XMPP message object. Parse it yourself!'''
         newMsg = json.loads(msg['body'])
-        msgType = str(newMsg['msgType'])
-        if msgType=='ProviderResponse':
+        if str(msg['subject'])=='ProviderResponse':
             ''' This is a message which gives the response of some provider which we flooded for query results! '''
             if(str(newMsg['status'])=='Accepted'):
                 #Party! Request accepted!
                     
                 u = User.get(User.username==str(msg['from']).split("@")[0])
                 
-                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
+                if(self.currentCount >= eval(str(self.queryObject['countMin']))):
                     #We don't need this guy anymore. Send him a not required message.
                     self.sendProviderConfirmation(u, False)
                     return
@@ -67,14 +67,15 @@ class QueryProcessor(threading.Thread):
                 
                 self.sendProviderConfirmation(u, True)
                 
-                if(self.currentCount >= eval(str(self.queryObject['minCount']))):
+                if(self.currentCount >= eval(str(self.queryObject['countMin']))):
                     #Send final confirmation to client!
+                    self.waiting = True
                     self.sendFinalConfirmation(True)
                     pass
             else:
                 #Snobby client, rejected our request. Ignore this guy!
                 pass
-        elif msgType=='ProviderData':
+        elif str(msg['subject'])=='ProviderData':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
             
             pass
@@ -88,13 +89,13 @@ class QueryProcessor(threading.Thread):
         query_possible = self.storeQueryInDB(self.queryObject)
         if(query_possible):
             self.floodProviders()
+            ''' Start a timer to check for enough providers after timeout! '''
+            threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
+            print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
             self.amIDone = True
             return 
-        
-        ''' Start a timer to check for enough providers after timeout! '''
-        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
         
         ''' we have flooded providers now. Should start listening for messages! '''
         while (self.amIDone==False):
@@ -106,29 +107,29 @@ class QueryProcessor(threading.Thread):
     
     def sendProviderConfirmation(self, user, confirmed):
         if(confirmed):
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
         else:
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Already got the required providers! :)"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Already got the required providers! :)"}'
         self.msgHandler.send_message(mto=(str(user.username) + "@" + self.hostName), mbody=toSend, msubject='Final Confirmation')
         print "Provider Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed) + " to User: " + str(user.username)
        
     
     def sendFinalConfirmation(self, confirmed):
         if(confirmed):
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Confirmed"}'
         else:
-            toSend = '{"queryNo":' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Not enough providers currently!"}'
+            toSend = '{"queryNo":"' + str(self.queryNo) + '", "finalStatus":"Rejected", "errorMessage": "Not enough providers currently!"}'
         self.msgHandler.send_message(mto=self.qMessage['from'], mbody=toSend, msubject='Final Confirmation')
         print "Requester Confirmation sent for query no: " + str(self.queryNo) + ". Status: " + str(confirmed)
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
         ''' Now z has all the users we have to send a request to! '''
         
         toSend = '{"queryNo":"' + str(self.queryNo) + '","sensorType":"' + str(self.queryObject['dataReqd']) + '","frequency":"' + str(self.queryObject['frequency']) + '",'
-        toSend = toSend + '"Activity":"' + str(self.queryObject['Activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "toTime":' + str(self.queryObject['toTime']) + '"}'
+        toSend = toSend + '"Activity":"' + str(self.queryObject['activity']) + '", "fromTime":"' + str(self.queryObject['fromTime']) + '", "toTime":"' + str(self.queryObject['toTime']) + '"}'
          
         #self.msgHandler.send_message(self.qMessage['from'], toSend)
         serverAppend = '@' + self.hostName
@@ -150,6 +151,11 @@ class QueryProcessor(threading.Thread):
             print "User not in DB"
             return False
         
+        qResults = Query.select().where(Query.queryNo==str(qObj['queryNo'])).count()
+        if(qResults!=0):
+            print 'Discarding message for queryNo: ' + str(qObj['queryNo']) + ' as it already existed in DB'
+            return False
+        
         if foundFlag:
             q = Query()
             q.username = uname
@@ -161,13 +167,8 @@ class QueryProcessor(threading.Thread):
             q.fromTime = datetime.datetime.fromtimestamp(eval(str(qObj['fromTime']))/1000)
             q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime']))/1000)
             q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime']))/1000)
-<<<<<<< HEAD
-            q.Location = eval(str(qObj['location']))
-            q.Activity = eval(str(qObj['activity']))
-=======
             q.Location = 'hardcoded'#str(qObj['location'])
-            q.Activity = str(qObj['Activity'])
->>>>>>> FETCH_HEAD
+            q.Activity = str(qObj['activity'])
             q.countMin = eval(str(qObj['countMin']))
             q.countMax = eval(str(qObj['countMax']))
             q.countReceived = 0
@@ -187,7 +188,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
         count=0
         for p in u:
                 count=count+p.users.count()
@@ -196,6 +197,8 @@ class QueryProcessor(threading.Thread):
         ''' Possible query to get all users of such sensors in u:
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
+            
+        print 'Found count=' + str(count) + ' for query Number: ' + self.queryNo
         
         if(count>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
@@ -220,7 +223,7 @@ class QueryProcessor(threading.Thread):
             
         toSend = toSend + ', "errMessage": "' + errMessage
         toSend = toSend + '", "queryNo":"' + str(self.queryNo) + '"}'
-        self.msgHandler.send_message(self.qMessage['from'], toSend)
+        self.msgHandler.send_message(mto=self.qMessage['from'], mbody=toSend, msubject='isQueryPossible')
         
         return 
     
@@ -240,7 +243,7 @@ def queryparse(msgHandler, msg): #parse queries
 	for i in threading.enumerate():
 		if i.name==qno:
 			print 'Found a thread already for query number: ' + qno
-			i.onThread(QueryProcessor.processMessage, msg)
+			i.onThread(QueryProcessor.processMessage, i, msg)
 			return
 	'''TODO :need to check for msgs related to threads/queries which have been already terminated'''
 	#else, if no current object found, create a new one!
