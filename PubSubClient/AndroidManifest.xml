@@ -17,7 +17,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
+	<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+	<uses-permission android:name="android.permission.VIBRATE" />
+	<uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
     <application
         android:allowBackup="true"
      
@@ -54,9 +56,12 @@
         <service
             android:name = ".AccReadings">
         </service>
+        
+        <service android:name = "com.middleware.pubsubclient.RequestListener"></service>
         <service android:name="com.middleware.pubsubclient.RequestListener"></service>
         <service android:name="com.middleware.pubsubclient.ActivityRecognitionCallingService"></service>
         <service android:name="com.middleware.pubsubclient.ActivityRecognitionService"></service>
+        <!--   <receiver android:name="com.middleware.pubsubclient.AlarmReceiver" ></receiver>-->
     </application>
 
 </manifest>
