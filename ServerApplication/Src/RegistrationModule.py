@@ -19,14 +19,14 @@ class RegistrationProcessor(threading.Thread):
         '''This is the method called when this thread is started.'''
     def run(self):
         ''' Check if the message is registration or deregistration '''
-        print "Running Registration Processor!"
-        print str(self.rMessage['subject']) + " ; is the message subject"
+        #print "Running Registration Processor!"
+        #print str(self.rMessage['subject'])
         if str(self.rMessage['subject'])  in ('Sensor Capabilities'): #preliminary Check, might change later
-            print "Matched Register!"
+            #print "Matched Register!"
             self.msgObject = json.loads(self.rMessage['body'])
             self.registerUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
         elif str(self.rMessage['subject'])  in ('Delete Account'):
-            print "Matched DeRegister!"
+            #print "Matched DeRegister!"
             self.deRegisterUser(str(self.rMessage['from']).split("@")[0])
         return
     
@@ -50,7 +50,7 @@ class RegistrationProcessor(threading.Thread):
                 download = False
             u = User(username=str(userName), RegistrationDate=datetime.datetime.now(), ActivityRecognition=activity, DownloadAllowed=download)
             u.save()
-        print "User Saved"
+        #print "User Saved"
         
         if foundFlag:
             #User already exists. Should handle it differently.
@@ -78,7 +78,7 @@ class RegistrationProcessor(threading.Thread):
             sur = SensorUserRel(user=u, sensor=s)
             sur.save()     
                 
-        print "Registered Successfully!"
+        print "Registered" + str(userName) + " Successfully!"
         
         self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="Registration Successful!", mbody="Thank you! Registration/Updation Successful!")
         
@@ -96,8 +96,10 @@ class RegistrationProcessor(threading.Thread):
             for i in sensorObjects:
                 i.delete_instance()
             u.delete_instance()
+        except User.DoesNotExist:
+            print 'User ' + str(userName) + ' does not exist. Returning delete ACK anyway.'
         except:
-            print "Something went wrong."
+            print 'Unknown error; returning!'
             return
         
         print str(userName) + " deleted successfully!"

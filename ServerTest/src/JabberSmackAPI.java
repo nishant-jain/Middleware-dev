@@ -71,7 +71,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 			
 			obj.put("ActivityRecognition", "present");
 			obj.put("DownloadAllowed", "yes");
-			obj.put("noSensors", count-1);
+			obj.put("noSensors", count-1);	
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,12 +80,15 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 		
 		
 	    if(am.supportsAccountCreation()){
-	    am.createAccount(userName, password); //to create accounts.Comment out if not needed.
-	    connection.login(userName,password);
-		Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
-		loginWithServer.setSubject("Sensor Capabilities");
-		loginWithServer.setBody(obj.toString());
-		connection.sendPacket(loginWithServer);}
+		    try{am.createAccount(userName, password); //to create accounts.Comment out if not needed.
+		    
+		    }catch(XMPPException e){}
+		    connection.login(userName,password);
+			Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+			loginWithServer.setSubject("Sensor Capabilities");
+			loginWithServer.setBody(obj.toString());
+			connection.sendPacket(loginWithServer);
+	    }
 	    
 	    ChatManager chatmanager = connection.getChatManager();
 	    connection.getChatManager().addChatListener(new ChatManagerListener()
@@ -96,11 +99,11 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 	        {
 	          public void processMessage(Chat chat, Message message)
 	          {
-	        	  System.out.println("Received message: " 
-	                      + (message != null ? message.getBody() : "NULL"));
+	        	//  System.out.println("Received message: " 
+	              //        + (message != null ? message.getBody() : "NULL"));
 	        	
 	        		if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
-	    	            System.out.println("disconnected ");
+	    	            System.out.println("disconnected "+username);
 
 					            connection.disconnect();
 					            time=System.currentTimeMillis()-time;
@@ -136,23 +139,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     	
     }
  
-    public void sendMessage(String message, String to) throws XMPPException
-    {
-    Chat chat = connection.getChatManager().createChat(to, this);
-    chat.sendMessage(message);
-    }
- 
-    public void displayBuddyList()
-    {
-    Roster roster = connection.getRoster();
-    Collection<RosterEntry> entries = roster.getEntries();
- 
-    System.out.println("\n\n" + entries.size() + " buddy(ies):");
-    for(RosterEntry r:entries)
-    {
-    System.out.println(r.getUser());
-    }
-    }
+    
  
     public void disconnect()
     {
@@ -167,52 +154,16 @@ public class JabberSmackAPI extends Thread implements MessageListener{
  
     public static void main(String args[]) throws XMPPException, IOException
     {
-    // declare variables
-//    JabberSmackAPI c = new JabberSmackAPI();
-    //JabberSmackAPI d = new JabberSmackAPI();
-    //JabberSmackAPI e = new JabberSmackAPI();
-
-  //  BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    //String msg;
+   
  
- 
+    	JabberSmackAPI T1;
     // turn on the enhanced debugger
     XMPPConnection.DEBUG_ENABLED = true;
-    JabberSmackAPI T1 = new JabberSmackAPI("user1","1234");
-    T1.start();
-    JabberSmackAPI T2 = new JabberSmackAPI("user2","1234");
-    T2.start();
-    JabberSmackAPI T3 = new JabberSmackAPI("user3","1234");
-    T3.start();
-    JabberSmackAPI T4 = new JabberSmackAPI("user4","1234");
-    T4.start();
-    JabberSmackAPI T5 = new JabberSmackAPI("user5","1234");
-    T5.start();
+    for(int i=0;i<100;i++){
+    T1 = new JabberSmackAPI("user"+i,"1234");
+    T1.start();}
     
-    // Enter your login information here
-    //c.login("new_user2", "1234");
-    
- /*
-    c.displayBuddyList();
- 
-    System.out.println("-----");
- 
-    System.out.println("Who do you want to talk to? - Type contacts full email address:");
-    String talkTo = br.readLine();
- 
-    System.out.println("-----");
-    System.out.println("All messages will be sent to " + talkTo);
-    System.out.println("Enter your message in the console:");
-    System.out.println("-----\n");
- 
-    while( !(msg=br.readLine()).equals("bye"))
-    {
-        c.sendMessage(msg, talkTo);
-    }
 
-    c.disconnect();
-   
-    System.exit(0);*/
     }
  
 }

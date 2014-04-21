@@ -7,6 +7,10 @@ import java.util.List;
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.ChatManager;
+import org.jivesoftware.smack.ChatManagerListener;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -68,18 +72,26 @@ public class RegisterMe extends Activity{
 	Intent intentRequestListener;
 	Intent intentPublishQuery;
 	
+	File file;
+	
 	//Won't be needed later when recording would be done based on queries from server
 	Button startRecording;
 	Button stopRecording;
 	
 	Button stopListeningtoRequests;
+	Button startListeningtoRequests;
 	Button publishQueryButton;
+	
+	Button upload;
 
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(null);
 		setContentView(R.layout.activity_register_me);
+		
+		upload=(Button)findViewById(R.id.button5);
+		upload.setOnClickListener(startUploading);
 		
 		startRecording = (Button)findViewById(R.id.button2);
 		stopRecording = (Button)findViewById(R.id.button3);	
@@ -88,6 +100,9 @@ public class RegisterMe extends Activity{
 		
 		stopListeningtoRequests = (Button)findViewById(R.id.button4);
 		stopListeningtoRequests.setOnClickListener(stopListening);
+		
+		//startListeningtoRequests.setOnClickListener(startListening);
+		
 		publishQueryButton = (Button)findViewById(R.id.button1);
 		publishQueryButton.setOnClickListener(publishQuery);
 		
@@ -95,6 +110,8 @@ public class RegisterMe extends Activity{
 		intentAR = new Intent(RegisterMe.this, ActivityRecognitionCallingService.class);
 		intentRequestListener = new Intent(RegisterMe.this, RequestListener.class);
 		intentPublishQuery = new Intent(getApplicationContext(),PublishQuery.class);
+		
+		file= new File(Environment.getExternalStorageDirectory()+"/DataCollection/Experiment_04-09-14_10-40-21/acc.csv");
 		
 		XMPPConnection.DEBUG_ENABLED=true;
 		showDialog=new Builder(this);
@@ -229,6 +246,14 @@ public class RegisterMe extends Activity{
 			startActivity(intentPublishQuery);
 		}
 	};
+	
+	OnClickListener startUploading = new OnClickListener() {
+		
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			UploadFile.upload(file, RegisterMe.this.getApplicationContext());
+		}
+	};
 	OnClickListener startDataRecording = new OnClickListener() {
 		public void onClick(View v) {
 			
@@ -250,6 +275,17 @@ public class RegisterMe extends Activity{
 		public void onClick(View v) {
 			stopService(intentAcc);
 			stopService(intentAR);
+		}
+	};
+	
+	OnClickListener startListening = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			
+			if(startService(intentRequestListener)!=null)
+				showDialog.setMessage("Service already running");
 		}
 	};
 	
@@ -396,7 +432,7 @@ public class RegisterMe extends Activity{
 
 			if(am.supportsAccountCreation())
 			{
-				System.out.println("Server Supports new account creation");
+			//	System.out.println("Server Supports new account creation");
 				try{
 					username=chkInstall.getString("username", null);
 					password=chkInstall.getString("password",null);
@@ -407,6 +443,8 @@ public class RegisterMe extends Activity{
 					loginWithServer.setSubject("Sensor Capabilities");
 					loginWithServer.setBody(obj.toString());
 					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
+					
+					
 					showDialog.setMessage("Sensor information sent to the server.")
 					.create()
 					.show();
@@ -422,7 +460,7 @@ public class RegisterMe extends Activity{
 
 			else
 			{
-				System.out.println("Server does not support new account creation");
+			//	System.out.println("Server does not support new account creation");
 				showDialog.setMessage("Account cannot be created on the server")
 				.create()
 				.show();						
@@ -473,10 +511,11 @@ public class RegisterMe extends Activity{
 		//userName=UNIQUE_ID.concat("@serverName");
 		userName=UNIQUE_ID;
 		editPrefs.putString("username", userName).commit();
+		//System.out.println(UNIQUE_ID);
 		editPrefs.putString("password", UNIQUE_ID).commit();
-		System.out.println("username created: "+userName);
-		System.out.println("password is: "+UNIQUE_ID);
-		System.out.println("Proceeding to registeration");
+		//System.out.println("username created: "+userName);
+		//System.out.println("password is: "+UNIQUE_ID);
+		//System.out.println("Proceeding to registeration");
 		showDialog
 		.setTitle("Installating app...")
 		.setMessage("Username and password created");
