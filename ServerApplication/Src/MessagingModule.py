@@ -53,8 +53,9 @@ class MessageHandler(ClientXMPP):
         msg['from'] = str(msg['from']).split("/")[0]
         if msg['type'] in ('chat', 'normal'):
             #print "Message received",msg
-            if(msg['type'] is 'chat'):  #using msg type "chat" to symbolise queries
+            if(str(msg['type'])=='chat'):  #using msg type "chat" to symbolise queries
                 QueryHandlerModule.queryparse(self, msg)
+                return
             else:
                 RegistrationModule.processRegistrationMessage(self, msg)  #using msg type "normal" to symbolise registration for capabilities
             #msg.reply("Thanks for sending,\n%(body)s" % msg).send()  # can be converted to ack, although need to see if those are necessary
@@ -69,7 +70,7 @@ if __name__ == '__main__':
                         format='%(levelname)-8s %(message)s')
     #Models.connect()
     print "hello"    
-    xmpp = MessageHandler('admin@localhost', 'kshitiz') #Should keep a centralized username and password. 
+    xmpp = MessageHandler('server@103.25.231.23', 'server') #Should keep a centralized username and password. 
     xmpp.connect()
     
     #print "hi"

@@ -7,20 +7,12 @@ import java.util.List;
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
-import org.jivesoftware.smack.PacketCollector;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.AndFilter;
-import org.jivesoftware.smack.filter.PacketFilter;
-import org.jivesoftware.smack.filter.PacketTypeFilter;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -28,6 +20,7 @@ import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -44,9 +37,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
 @SuppressLint("UseValueOf")
-public class RegisterMe extends Activity{
+public class RegisterMe extends Activity {
 
 	public static String username;
 	public String password;
@@ -57,7 +52,7 @@ public class RegisterMe extends Activity{
 	SharedPreferences chkInstall;
 	SharedPreferences.Editor editPrefs;
 	SensorManager sm;
-	//TextView tv;
+	// TextView tv;
 	public static List<Sensor> deviceSensors;
 	AlertDialog.Builder showDialog;
 	Message loginWithServer;
@@ -67,52 +62,72 @@ public class RegisterMe extends Activity{
 	Intent intentAR;
 	Intent intentRequestListener;
 	Intent intentPublishQuery;
-	
-	//Won't be needed later when recording would be done based on queries from server
+
+	File file;
+	AlarmReceiver alarmReceiver;
+	AlarmReceiverStop alarmReceiverStop;
+
+	// Won't be needed later when recording would be done based on queries from
+	// server
 	Button startRecording;
 	Button stopRecording;
-	
+
 	Button stopListeningtoRequests;
+	Button startListeningtoRequests;
 	Button publishQueryButton;
+
+	Button upload;
 
 	@SuppressLint("ShowToast")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(null);
 		setContentView(R.layout.activity_register_me);
-		
-		startRecording = (Button)findViewById(R.id.button2);
-		stopRecording = (Button)findViewById(R.id.button3);	
+
+		upload = (Button) findViewById(R.id.button5);
+		upload.setOnClickListener(startUploading);
+
+		startRecording = (Button) findViewById(R.id.button2);
+		stopRecording = (Button) findViewById(R.id.button3);
 		startRecording.setOnClickListener(startDataRecording);
 		stopRecording.setOnClickListener(stopDataRecording);
-		
-		stopListeningtoRequests = (Button)findViewById(R.id.button4);
+
+		stopListeningtoRequests = (Button) findViewById(R.id.button4);
 		stopListeningtoRequests.setOnClickListener(stopListening);
-		publishQueryButton = (Button)findViewById(R.id.button1);
+
+		// startListeningtoRequests.setOnClickListener(startListening);
+
+		publishQueryButton = (Button) findViewById(R.id.button1);
 		publishQueryButton.setOnClickListener(publishQuery);
-		
+
 		intentAcc = new Intent(RegisterMe.this, AccReadings.class);
-		intentAR = new Intent(RegisterMe.this, ActivityRecognitionCallingService.class);
-		intentRequestListener = new Intent(RegisterMe.this, RequestListener.class);
-		intentPublishQuery = new Intent(getApplicationContext(),PublishQuery.class);
-		
-		XMPPConnection.DEBUG_ENABLED=true;
-		showDialog=new Builder(this);
-		//		tv = (TextView)findViewById(R.id.textView1);
-		//		tv.setText("List of sensors in this phone:\n");
+		intentAR = new Intent(RegisterMe.this,
+				ActivityRecognitionCallingService.class);
+		intentRequestListener = new Intent(RegisterMe.this,
+				RequestListener.class);
+		intentPublishQuery = new Intent(getApplicationContext(),
+				PublishQuery.class);
+
+		file = new File(Environment.getExternalStorageDirectory()
+				+ "/DataCollection/Experiment_04-09-14_10-40-21/acc.csv");
+
+		XMPPConnection.DEBUG_ENABLED = true;
+		showDialog = new Builder(this);
+		// tv = (TextView)findViewById(R.id.textView1);
+		// tv.setText("List of sensors in this phone:\n");
 		sm = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		deviceSensors = sm.getSensorList(Sensor.TYPE_ALL);
-		//tv.append(deviceSensors.toString());
+		// tv.append(deviceSensors.toString());
 
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 
 		System.out.println("Establishing connection with server");
-		config=new ConnectionConfiguration("103.25.231.23",5222);
+		config = new ConnectionConfiguration("103.25.231.23", 5222);
 		config.setDebuggerEnabled(true);
-		//config=new ConnectionConfiguration("jabber.org",5222);
-		conn=new XMPPConnection(config);
-
+		// config=new ConnectionConfiguration("jabber.org",5222);
+		conn = new XMPPConnection(config);
 		try {
 			config.setSASLAuthenticationEnabled(true);
 			config.setCompressionEnabled(true);
@@ -122,15 +137,17 @@ public class RegisterMe extends Activity{
 				config.setTruststoreType("AndroidCAStore");
 				config.setTruststorePassword(null);
 				config.setTruststorePath(null);
-			} 
-			else {
+			} else {
 				config.setTruststoreType("BKS");
 				String path = System.getProperty("javax.net.ssl.trustStore");
-				if (path == null)
-					path = System.getProperty("java.home") + File.separator + "etc" + File.separator + "security" + File.separator + "cacerts.bks";
+				if (path == null) {
+					path = System.getProperty("java.home") + File.separator
+							+ "etc" + File.separator + "security"
+							+ File.separator + "cacerts.bks";
+				}
 				config.setTruststorePath(path);
 			}
-		} 
+		}
 
 		catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -138,19 +155,17 @@ public class RegisterMe extends Activity{
 
 		}
 
-
-		obj=new JSONObject();
-		int count=0;
-		for(Sensor s : deviceSensors)
-		{
-			JSONArray array=new JSONArray();
+		obj = new JSONObject();
+		int count = 1;
+		for (Sensor s : deviceSensors) {
+			JSONArray array = new JSONArray();
 			try {
 				array.put(findType(s.getType()));
 				array.put(s.getMaximumRange());
 				array.put(s.getMinDelay());
-				array.put((Number)s.getPower());
-				array.put((Number)s.getResolution());
-				obj.put("sensor"+(count++),array);
+				array.put((Number) s.getPower());
+				array.put((Number) s.getResolution());
+				obj.put("sensor" + (count++), array);
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -160,84 +175,99 @@ public class RegisterMe extends Activity{
 
 		System.out.println("Checking for play services");
 		int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-		///JSONArray array=new JSONArray();
-		
-			try {
-				if (status == ConnectionResult.SUCCESS) {
-					System.out.println("Play services present");
-				//array.put("present");
-				obj.put("ActivityRecognition", "present");}
-				else
-					obj.put("ActivityRecognition", "absent");
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		//DownloadAllowed for now by default
-			try {
-				obj.put("DownloadAllowed", "yes");
-			} catch (JSONException e2) {
-				// TODO Auto-generated catch block
-				e2.printStackTrace();
-			}
-		
+		// /JSONArray array=new JSONArray();
 
 		try {
-			obj.put("noSensors", obj.length());
+			if (status == ConnectionResult.SUCCESS) {
+				System.out.println("Play services present");
+				// array.put("present");
+				obj.put("ActivityRecognition", "present");
+			} else {
+				obj.put("ActivityRecognition", "absent");
+			}
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//System.out.println(obj.toString());
-		if(isNetworkAvailable())
-		{
-			try {		
+
+		// DownloadAllowed for now by default
+		try {
+			obj.put("DownloadAllowed", "yes");
+		} catch (JSONException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+
+		try {
+			obj.put("noSensors", obj.length() - 2);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// System.out.println(obj.toString());
+		if (isNetworkAvailable()) {
+			try {
 				conn.connect();
 				System.out.println("Connection Established");
-				am=conn.getAccountManager();
+				am = conn.getAccountManager();
 			} catch (XMPPException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}		
-		}
-		else
-		{
+			}
+		} else {
 			System.out.println("No internet Connection");
 		}
 
-		chkInstall=getSharedPreferences(PREFS_NAME,0);
-		editPrefs=chkInstall.edit();
-		boolean installing=chkInstall.getBoolean("firstInstall", true);
-		//installing = true;
-		if(installing)
-		{			
-			System.out.println("installing application");			
-			createUserName();		
-			registerClient();		
+		chkInstall = getSharedPreferences(PREFS_NAME, 0);
+		editPrefs = chkInstall.edit();
+		boolean installing = chkInstall.getBoolean("firstInstall", true);
+		// installing = true;
+		if (installing) {
+			System.out.println("installing application");
+			createUserName();
+			registerClient();
 		}
 
-		else
-		{
+		else {
 			loginToServer();
 		}
+
+		alarmReceiver = new AlarmReceiver();
+		this.registerReceiver(alarmReceiver, new IntentFilter("dataRequest"));
+
+		alarmReceiverStop = new AlarmReceiverStop();
+		this.registerReceiver(alarmReceiverStop, new IntentFilter(
+				"dataStopRequest"));
 	}
 
-	OnClickListener publishQuery = new OnClickListener()
-	{
+	OnClickListener publishQuery = new OnClickListener() {
+		@Override
 		public void onClick(View v) {
 			startActivity(intentPublishQuery);
 		}
 	};
-	OnClickListener startDataRecording = new OnClickListener() {
+
+	OnClickListener startUploading = new OnClickListener() {
+
+		@Override
 		public void onClick(View v) {
-			
+			// TODO Auto-generated method stub
+			UploadFile.upload(file, RegisterMe.this.getApplicationContext());
+		}
+	};
+	OnClickListener startDataRecording = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+
 			Date date = new Date();
-			String mFileName = android.text.format.DateFormat.format("MM-dd-yy_kk-mm-ss",date).toString();
-			File directory = new File(new File(Environment.getExternalStorageDirectory()
-					//+ "/ReadingsAcc/");
-					+ "/DataCollection/").getPath(),"Experiment_"+mFileName+"/");
-			
+			String mFileName = android.text.format.DateFormat.format(
+					"MM-dd-yy_kk-mm-ss", date).toString();
+			File directory = new File(new File(
+					Environment.getExternalStorageDirectory()
+					// + "/ReadingsAcc/");
+							+ "/DataCollection/").getPath(), "Experiment_"
+					+ mFileName + "/");
+
 			if (!directory.exists()) {
 				directory.mkdirs();
 			}
@@ -245,69 +275,79 @@ public class RegisterMe extends Activity{
 			startService(intentAR);
 		}
 	};
-	
+
 	OnClickListener stopDataRecording = new OnClickListener() {
+		@Override
 		public void onClick(View v) {
 			stopService(intentAcc);
 			stopService(intentAR);
 		}
 	};
-	
-	OnClickListener stopListening = new OnClickListener() {
+
+	OnClickListener startListening = new OnClickListener() {
+
+		@Override
 		public void onClick(View v) {
-			stopService(intentRequestListener);
-			
+			// TODO Auto-generated method stub
+
+			if (startService(intentRequestListener) != null) {
+				showDialog.setMessage("Service already running");
+			}
 		}
 	};
-	public void loginToServer()
-	{
-		if(conn.isConnected())
-		{
+
+	OnClickListener stopListening = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+			stopService(intentRequestListener);
+
+		}
+	};
+
+	public void loginToServer() {
+		if (conn.isConnected()) {
 			System.out.println("trying to login");
 			try {
 
-				username=chkInstall.getString("username", null);
-				password=chkInstall.getString("password", null);
-				conn.login(username	,password);
+				username = chkInstall.getString("username", null);
+				password = chkInstall.getString("password", null);
+				conn.login(username, password);
 				System.out.println("login successful");
 				showDialog.setTitle("Login successful")
-				.setMessage("connected to the server")
-				.create()
-				.show();
+						.setMessage("connected to the server").create().show();
 				startService(intentRequestListener);
 
 			} catch (XMPPException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				showDialog.setTitle("Login failed")
-				.setMessage("Unable to login...Make sure you are registered with the server")
-				.create()
-				.show();
+				showDialog
+						.setTitle("Login failed")
+						.setMessage(
+								"Unable to login...Make sure you are registered with the server")
+						.create().show();
 
 			}
-		}
-		else
-		{
+		} else {
 			System.out.println("Not connected to the server");
 		}
 	}
 
-	protected void onDestroy()
-	{
+	@Override
+	protected void onDestroy() {
 		super.onDestroy();
 		conn.disconnect();
 		System.out.println("Connection terminated");
 	}
 
-
 	private boolean isNetworkAvailable() {
-		ConnectivityManager connectivityManager 
-		= (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-		if(activeNetworkInfo != null && activeNetworkInfo.isConnected())
+		ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo activeNetworkInfo = connectivityManager
+				.getActiveNetworkInfo();
+		if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
 			return true;
-		else
+		} else {
 			return false;
+		}
 	}
 
 	@Override
@@ -316,32 +356,27 @@ public class RegisterMe extends Activity{
 		getMenuInflater().inflate(R.menu.register_me, menu);
 		return true;
 
-	}	
+	}
 
-	public boolean onOptionsItemSelected(MenuItem item)
-	{
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
 		super.onOptionsItemSelected(item);
 
-		if(item.getItemId()== R.id.subscription)
-		{
+		if (item.getItemId() == R.id.subscription) {
 
-			Intent i=new Intent(getApplicationContext(),SubscribeTopics.class);
+			Intent i = new Intent(getApplicationContext(),
+					SubscribeTopics.class);
 			startActivity(i);
-		}
-		else if(item.getItemId()==R.id.action_settings)
-		{
-			Intent i2=new Intent(getApplicationContext(),Settings.class);
+		} else if (item.getItemId() == R.id.action_settings) {
+			Intent i2 = new Intent(getApplicationContext(), Settings.class);
 			startActivity(i2);
 
 		}
 		return false;
 	}
 
-
-	public String findType(int i)
-	{
-		switch(i)
-		{
+	public String findType(int i) {
+		switch (i) {
 		case 1:
 			return "Accelerometer";
 		case 2:
@@ -389,97 +424,88 @@ public class RegisterMe extends Activity{
 	}
 
 	@SuppressLint("ShowToast")
-	public void registerClient()
-	{			
-		if(isNetworkAvailable() && conn.isConnected())
-		{
+	public void registerClient() {
+		if (isNetworkAvailable() && conn.isConnected()) {
 
-			if(am.supportsAccountCreation())
-			{
-				System.out.println("Server Supports new account creation");
-				try{
-					username=chkInstall.getString("username", null);
-					password=chkInstall.getString("password",null);
-					am.createAccount(username, password);		//creates an account with the XMPP server
+			if (am.supportsAccountCreation()) {
+				// System.out.println("Server Supports new account creation");
+				try {
+					username = chkInstall.getString("username", null);
+					password = chkInstall.getString("password", null);
+					am.createAccount(username, password); // creates an account
+															// with the XMPP
+															// server
 					loginToServer();
 
-					loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+					loginWithServer = new Message("server@103.25.231.23",
+							Message.Type.normal);
 					loginWithServer.setSubject("Sensor Capabilities");
 					loginWithServer.setBody(obj.toString());
-					conn.sendPacket(loginWithServer);			//sends a normal message to the customServer containing the sensor capabilities
-					showDialog.setMessage("Sensor information sent to the server.")
-					.create()
-					.show();
-					//listeningForMessages();
-				}
-				catch(Exception e)
-				{
-					accountExists=true;
-					if(accountExists)
+					conn.sendPacket(loginWithServer); // sends a normal message
+														// to the customServer
+														// containing the sensor
+														// capabilities
+
+					showDialog
+							.setMessage(
+									"Sensor information sent to the server.")
+							.create().show();
+					// listeningForMessages();
+				} catch (Exception e) {
+					accountExists = true;
+					if (accountExists) {
 						loginToServer();
+					}
 				}
 			}
 
-			else
-			{
-				System.out.println("Server does not support new account creation");
-				showDialog.setMessage("Account cannot be created on the server")
-				.create()
-				.show();						
+			else {
+				// System.out.println("Server does not support new account creation");
+				showDialog
+						.setMessage("Account cannot be created on the server")
+						.create().show();
 			}
 		}
 
-		else
-		{
+		else {
 			System.out.println("not connected to the server");
 
-			showDialog.setMessage("Not connected to the server")
-			.create()
-			.show();
+			showDialog.setMessage("Not connected to the server").create()
+					.show();
 		}
 
 	}
 
-	/*public void listeningForMessages() {
-		PacketFilter filter = new AndFilter(new PacketTypeFilter(Message.class));
-		PacketCollector collector = conn.createPacketCollector(filter);
-		int k=0;
-		while (true && k<40000000) {
-			Packet packet = collector.nextResult();
-			if (packet instanceof Message) {
-				Message message = (Message) packet;
-				if (message != null && message.getBody() != null)
-					System.out.println("Received message from "
-							+ packet.getFrom() + " : "
-							+ (message != null ? message.getBody() : "NULL"));
-				showDialog.setMessage("Received message from server" + " : "
-						+ (message != null ? message.getBody() : "NULL"))
-						.create()
-						.show();
+	/*
+	 * public void listeningForMessages() { PacketFilter filter = new
+	 * AndFilter(new PacketTypeFilter(Message.class)); PacketCollector collector
+	 * = conn.createPacketCollector(filter); int k=0; while (true && k<40000000)
+	 * { Packet packet = collector.nextResult(); if (packet instanceof Message)
+	 * { Message message = (Message) packet; if (message != null &&
+	 * message.getBody() != null) System.out.println("Received message from " +
+	 * packet.getFrom() + " : " + (message != null ? message.getBody() :
+	 * "NULL")); showDialog.setMessage("Received message from server" + " : " +
+	 * (message != null ? message.getBody() : "NULL")) .create() .show();
+	 * 
+	 * break; } k++; } }
+	 */
 
-				break;
-			}
-			k++;
-		}
-	}*/
-	
 	@SuppressLint("ShowToast")
-	public void createUserName()
-	{		
+	public void createUserName() {
 		String userName;
 		String UNIQUE_ID;
-		TelephonyManager mngr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE); 
-		UNIQUE_ID=  mngr.getDeviceId();
-		//userName=UNIQUE_ID.concat("@serverName");
-		userName=UNIQUE_ID;
+		TelephonyManager mngr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		UNIQUE_ID = mngr.getDeviceId();
+		// userName=UNIQUE_ID.concat("@serverName");
+		userName = UNIQUE_ID;
 		editPrefs.putString("username", userName).commit();
+		// System.out.println(UNIQUE_ID);
 		editPrefs.putString("password", UNIQUE_ID).commit();
-		System.out.println("username created: "+userName);
-		System.out.println("password is: "+UNIQUE_ID);
-		System.out.println("Proceeding to registeration");
-		showDialog
-		.setTitle("Installating app...")
-		.setMessage("Username and password created");
+		// System.out.println("username created: "+userName);
+		// System.out.println("password is: "+UNIQUE_ID);
+		// System.out.println("Proceeding to registeration");
+		showDialog.setTitle("Installating app...").setMessage(
+				"Username and password created");
 
 	}
 

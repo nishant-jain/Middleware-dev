@@ -192,56 +192,57 @@ containing a value of this type.
         public static final int publish=0x7f02001d;
     }
     public static final class id {
-        public static final int CheckBox01=0x7f06001f;
-        public static final int CheckBox02=0x7f06001e;
-        public static final int CheckBox03=0x7f060020;
-        public static final int EditText01=0x7f06000c;
-        public static final int EditText02=0x7f06000d;
-        public static final int EditText03=0x7f06000e;
-        public static final int EditText04=0x7f06000f;
-        public static final int EditText05=0x7f060011;
-        public static final int EditText06=0x7f060027;
-        public static final int EditText07=0x7f060029;
-        public static final int Spinner01=0x7f06001a;
-        public static final int Spinner02=0x7f060025;
-        public static final int TextView01=0x7f06002f;
-        public static final int TextView02=0x7f06002e;
-        public static final int TextView03=0x7f06002d;
-        public static final int TextView04=0x7f06002b;
-        public static final int TextView05=0x7f060014;
-        public static final int TextView06=0x7f06002c;
-        public static final int TextView07=0x7f060017;
-        public static final int TextView08=0x7f06001c;
-        public static final int TextView09=0x7f060018;
-        public static final int TextView10=0x7f06002a;
-        public static final int View01=0x7f060024;
-        public static final int View02=0x7f060021;
-        public static final int View03=0x7f060022;
-        public static final int View04=0x7f060028;
-        public static final int action_settings=0x7f060030;
+        public static final int CheckBox01=0x7f060020;
+        public static final int CheckBox02=0x7f06001f;
+        public static final int CheckBox03=0x7f060021;
+        public static final int EditText01=0x7f06000d;
+        public static final int EditText02=0x7f06000e;
+        public static final int EditText03=0x7f06000f;
+        public static final int EditText04=0x7f060010;
+        public static final int EditText05=0x7f060012;
+        public static final int EditText06=0x7f060028;
+        public static final int EditText07=0x7f06002a;
+        public static final int Spinner01=0x7f06001b;
+        public static final int Spinner02=0x7f060026;
+        public static final int TextView01=0x7f060030;
+        public static final int TextView02=0x7f06002f;
+        public static final int TextView03=0x7f06002e;
+        public static final int TextView04=0x7f06002c;
+        public static final int TextView05=0x7f060015;
+        public static final int TextView06=0x7f06002d;
+        public static final int TextView07=0x7f060018;
+        public static final int TextView08=0x7f06001d;
+        public static final int TextView09=0x7f060019;
+        public static final int TextView10=0x7f06002b;
+        public static final int View01=0x7f060025;
+        public static final int View02=0x7f060022;
+        public static final int View03=0x7f060023;
+        public static final int View04=0x7f060029;
+        public static final int action_settings=0x7f060031;
         public static final int button1=0x7f060008;
         public static final int button2=0x7f060007;
         public static final int button3=0x7f060006;
         public static final int button4=0x7f060005;
-        public static final int checkBox1=0x7f06001d;
-        public static final int editText1=0x7f06000a;
-        public static final int editText2=0x7f06000b;
-        public static final int editText3=0x7f060010;
-        public static final int editText4=0x7f060012;
-        public static final int editText6=0x7f060026;
-        public static final int editText7=0x7f060019;
+        public static final int button5=0x7f060009;
+        public static final int checkBox1=0x7f06001e;
+        public static final int editText1=0x7f06000b;
+        public static final int editText2=0x7f06000c;
+        public static final int editText3=0x7f060011;
+        public static final int editText4=0x7f060013;
+        public static final int editText6=0x7f060027;
+        public static final int editText7=0x7f06001a;
         public static final int hybrid=0x7f060004;
         public static final int none=0x7f060000;
         public static final int normal=0x7f060001;
         public static final int satellite=0x7f060002;
-        public static final int space7=0x7f060015;
-        public static final int space8=0x7f06001b;
-        public static final int spinner1=0x7f060016;
-        public static final int subscription=0x7f060031;
+        public static final int space7=0x7f060016;
+        public static final int space8=0x7f06001c;
+        public static final int spinner1=0x7f060017;
+        public static final int subscription=0x7f060032;
         public static final int terrain=0x7f060003;
-        public static final int textView1=0x7f060009;
-        public static final int textView2=0x7f060013;
-        public static final int view1=0x7f060023;
+        public static final int textView1=0x7f06000a;
+        public static final int textView2=0x7f060014;
+        public static final int view1=0x7f060024;
     }
     public static final class layout {
         public static final int activity_register_me=0x7f030000;
@@ -253,7 +254,7 @@ containing a value of this type.
     }
     public static final class string {
         public static final int acc=0x7f070026;
-        public static final int acc_settings=0x7f07002e;
+        public static final int acc_settings=0x7f07002f;
         public static final int action_settings=0x7f07001b;
         public static final int app_name=0x7f07001a;
         /**   Title for notification shown when GooglePlayServices needs to be
@@ -354,16 +355,17 @@ containing a value of this type.
         public static final int gyro=0x7f070027;
         public static final int hello_world=0x7f07001c;
         public static final int loc=0x7f070022;
-        public static final int pref_user_profile=0x7f07002b;
+        public static final int pref_user_profile=0x7f07002c;
         public static final int publish=0x7f070025;
         public static final int rad=0x7f070023;
-        public static final int rot=0x7f070029;
+        public static final int rot=0x7f07002a;
         public static final int sensors=0x7f07001e;
-        public static final int startRecording=0x7f07002c;
-        public static final int stopRecording=0x7f07002d;
-        public static final int subscribe=0x7f07002a;
+        public static final int startRecording=0x7f07002d;
+        public static final int stopRecording=0x7f07002e;
+        public static final int subscribe=0x7f07002b;
         public static final int title_activity_register_client=0x7f07001d;
         public static final int to=0x7f070020;
+        public static final int uploadFile=0x7f070029;
     }
     public static final class style {
         /** 

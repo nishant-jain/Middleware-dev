@@ -128,7 +128,7 @@ class QueryProcessor(threading.Thread):
         ''' Now z has all the users we have to send a request to! '''
         
         toSend = '{"queryNo":"' + str(self.queryNo) + '","sensorType":"' + str(self.queryObject['dataReqd']) + '","frequency":"' + str(self.queryObject['frequency']) + '",'
-        toSend = toSend + '"Activity":"' + str(self.queryObject['Activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "endTime":' + str(self.queryObject['endTime']) + '"}'
+        toSend = toSend + '"Activity":"' + str(self.queryObject['Activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "toTime":' + str(self.queryObject['toTime']) + '"}'
          
         #self.msgHandler.send_message(self.qMessage['from'], toSend)
         serverAppend = '@' + self.hostName
@@ -161,8 +161,13 @@ class QueryProcessor(threading.Thread):
             q.fromTime = datetime.datetime.fromtimestamp(eval(str(qObj['fromTime']))/1000)
             q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime']))/1000)
             q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime']))/1000)
+<<<<<<< HEAD
             q.Location = eval(str(qObj['location']))
             q.Activity = eval(str(qObj['activity']))
+=======
+            q.Location = 'hardcoded'#str(qObj['location'])
+            q.Activity = str(qObj['Activity'])
+>>>>>>> FETCH_HEAD
             q.countMin = eval(str(qObj['countMin']))
             q.countMax = eval(str(qObj['countMax']))
             q.countReceived = 0
@@ -229,16 +234,19 @@ class QueryProcessor(threading.Thread):
 
 def queryparse(msgHandler, msg): #parse queries
     #print msg['body']
-    qno = str(json.loads(msg['body'])['queryNo'])
-    for i in threading.enumerate():
-        if i.name==qno:
-            i.onThread(QueryProcessor.processMessage, msg)
-            return
-    '''TODO :need to check for msgs related to threads/queries which have been already terminated'''
-    #else, if no current object found, create a new one!
-    print "Creating new Query thread."
-    processor = QueryProcessor(msgHandler, msg)
-    processor.name = qno
-    processor.start()
+	print 'Got query'
+	qno = str(json.loads(msg['body'])['queryNo'])
+	print 'Got message from query number: ' + qno
+	for i in threading.enumerate():
+		if i.name==qno:
+			print 'Found a thread already for query number: ' + qno
+			i.onThread(QueryProcessor.processMessage, msg)
+			return
+	'''TODO :need to check for msgs related to threads/queries which have been already terminated'''
+	#else, if no current object found, create a new one!
+	print "Creating new Query thread."
+	processor = QueryProcessor(msgHandler, msg)
+	processor.name = qno
+	processor.start()
 
 
