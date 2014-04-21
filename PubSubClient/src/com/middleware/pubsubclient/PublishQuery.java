@@ -148,7 +148,8 @@ public class PublishQuery extends Activity {
 	}
 
 	public JSONObject generatePayload() throws JSONException {
-		String sensors, delay;
+		String sensors;
+		int delay;
 		Long fromEpoch, toEpoch, expiryEpoch;
 		Double lat, lon;
 		String activity = "";
@@ -164,9 +165,10 @@ public class PublishQuery extends Activity {
 			sensorName.append("Gyroscope,");
 		}
 		if (rotation.isChecked()) {
-			sensorName.append("Rotation Vector");
+			sensorName.append("Rotation Vector,");
 		}
-		sensors = sensorName.toString();
+		sensors = sensorName.toString().substring(0,
+				sensorName.toString().length() - 1);
 		System.out.println(sensors);
 
 		Date fromDt = new Date();
@@ -205,7 +207,7 @@ public class PublishQuery extends Activity {
 		lat = Double.parseDouble(latitude.getText().toString());
 		lon = Double.parseDouble(longitude.getText().toString());
 		activity = (String) selectActivity.getSelectedItem();
-		delay = sensDelay.getText().toString();
+		delay = Integer.parseInt(sensDelay.getText().toString());
 		countMin = Integer.parseInt(minCount.getText().toString());
 		if (deviceCount.getSelectedItem().toString().compareTo("Range") == 0) {
 			countMax = Integer.parseInt(max.getText().toString());
@@ -235,7 +237,7 @@ public class PublishQuery extends Activity {
 		query.put("latitude", lat);
 		query.put("longitude", lon);
 		query.put("activity", activity);
-		query.put("frequency", 0);
+		query.put("frequency", delay);
 		query.put("countMin", countMin);
 		query.put("countMax", countMax);
 		/*

@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,6 +31,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -177,6 +179,8 @@ public class RegisterMe extends Activity {
 		int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
 		// /JSONArray array=new JSONArray();
 
+		boolean actRecogException = false;
+
 		try {
 			if (status == ConnectionResult.SUCCESS) {
 				System.out.println("Play services present");
@@ -188,6 +192,16 @@ public class RegisterMe extends Activity {
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			actRecogException = true;
+		}
+
+		if (actRecogException) {
+			try {
+				obj.put("ActivityRecognition", "absent");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		// DownloadAllowed for now by default
@@ -238,7 +252,21 @@ public class RegisterMe extends Activity {
 		alarmReceiverStop = new AlarmReceiverStop();
 		this.registerReceiver(alarmReceiverStop, new IntentFilter(
 				"dataStopRequest"));
+
+		LocalBroadcastManager.getInstance(this).registerReceiver(
+				mMessageReceiver, new IntentFilter("buildAlert"));
 	}
+
+	private final BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			showDialog
+					.setTitle("Sorry")
+					.setMessage(
+							"Not enough capable users. Query can't be fulfilled.")
+					.create().show();
+		}
+	};
 
 	OnClickListener publishQuery = new OnClickListener() {
 		@Override
