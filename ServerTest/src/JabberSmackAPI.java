@@ -76,43 +76,31 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		
-	    if(am.supportsAccountCreation()){
-		    try{am.createAccount(userName, password); //to create accounts.Comment out if not needed.
-		    
-		    }catch(XMPPException e){}
-		    connection.login(userName,password);
-			Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
-			loginWithServer.setSubject("Sensor Capabilities");
-			loginWithServer.setBody(obj.toString());
-			connection.sendPacket(loginWithServer);
-	    }
-	    
-	    ChatManager chatmanager = connection.getChatManager();
-	    connection.getChatManager().addChatListener(new ChatManagerListener()
-	    {
-	      public void chatCreated(final Chat chat, final boolean createdLocally)
-	      {
-	        chat.addMessageListener(new MessageListener()
-	        {
-	          public void processMessage(Chat chat, Message message)
-	          {
-	        	//  System.out.println("Received message: " 
-	              //        + (message != null ? message.getBody() : "NULL"));
-	        	
-	        		if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
-	    	            System.out.println("disconnected "+username);
+		  if(am.supportsAccountCreation()){
+			    try{am.createAccount(userName, password); //to create accounts.Comment out if not needed.
+			    
+			    }catch(XMPPException e){}
+			    connection.login(userName,password);
+				Message loginWithServer=new Message("server@103.25.231.23",Message.Type.normal);
+				loginWithServer.setSubject("Sensor Capabilities");
+				loginWithServer.setBody(obj.toString());
+				connection.sendPacket(loginWithServer);
+		    }	
+		Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
+			public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
+				//System.out.println("Received message: " + message); 
+				if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
+    	            //System.out.println("disconnected "+username);
 
-					            connection.disconnect();
-					            time=System.currentTimeMillis()-time;
-					            System.out.println("time taken "+username+" "+time);
-	        	}
-	          }
-	        });
-	      }
-	    });
+				            connection.disconnect();
+				            time=System.currentTimeMillis()-time;
+				            System.out.println("time taken "+username+" "+time);
+		            	}} });
+		     
+		
+	  
+	    
+	 
 	
     }
     public void run(){
