@@ -126,7 +126,7 @@ class QueryProcessor(threading.Thread):
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
         ''' Now z has all the users we have to send a request to! '''
         
@@ -185,7 +185,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) ).distinct()
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
         count=0
         for p in u:
                 count=count+p.users.count()
@@ -220,7 +220,7 @@ class QueryProcessor(threading.Thread):
             
         toSend = toSend + ', "errMessage": "' + errMessage
         toSend = toSend + '", "queryNo":"' + str(self.queryNo) + '"}'
-        self.msgHandler.send_message(self.qMessage['from'], toSend)
+        self.msgHandler.send_message(mto=self.qMessage['from'], mbody=toSend, msubject='isQueryPossible')
         
         return 
     
