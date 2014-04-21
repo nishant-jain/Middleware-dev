@@ -35,7 +35,7 @@ class QueryProcessor(threading.Thread):
     def onThread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
         
-    def providerRequestTimeout(self):
+    def providerRequestTimeout(self, useless):
         if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
@@ -103,7 +103,7 @@ class QueryProcessor(threading.Thread):
         while (self.amIDone==False):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
-                function(self, *args, **kwargs)
+                function(*args, **kwargs)
             except Queue.Empty:
                 pass
     
@@ -126,7 +126,7 @@ class QueryProcessor(threading.Thread):
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
         z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
         ''' Now z has all the users we have to send a request to! '''
         
@@ -185,7 +185,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) ).distinct()
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) ).distinct()
         count=0
         for p in u:
                 count=count+p.users.count()
