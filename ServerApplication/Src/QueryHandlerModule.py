@@ -162,7 +162,7 @@ class QueryProcessor(threading.Thread):
             q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime']))/1000)
             q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime']))/1000)
             q.Location = 'hardcoded'#str(qObj['location'])
-            q.Activity = str(qObj['Activity'])
+            q.Activity = str(qObj['activity'])
             q.countMin = eval(str(qObj['countMin']))
             q.countMax = eval(str(qObj['countMax']))
             q.countReceived = 0
