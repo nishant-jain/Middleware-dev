@@ -299,7 +299,7 @@ public class RequestListener extends Service {
 		JSONObject messageBody = dataRequests.get(queryNo);
 		// String sensors = messageBody.getString("sensorType");
 		// String frequency = messageBody.getString("frequency");
-		// String activity = messageBody.getString("Activity");
+		// String activity = messageBody.getString(activity");
 		// String fromTime = messageBody.getString("fromTime");
 		// String endTime = messageBody.getString("endTime");
 

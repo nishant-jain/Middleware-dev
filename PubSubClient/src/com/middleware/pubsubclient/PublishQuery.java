@@ -33,8 +33,8 @@ import android.widget.Spinner;
 
 public class PublishQuery extends Activity {
 
-	private Spinner deviceCount, selectActivity, sensDelay;
-	private EditText minCount;
+	private Spinner deviceCount, selectActivity;
+	private EditText minCount, sensDelay;
 	public EditText fromDate, fromTime, toDate, toTime, expiryDate, expiryTime,
 			max, latitude, longitude;
 	private CheckBox accelerometer, gps, gyroscope, rotation;
@@ -78,15 +78,15 @@ public class PublishQuery extends Activity {
 		latitude = (EditText) findViewById(R.id.editText3);
 		longitude = (EditText) findViewById(R.id.EditText05);
 		selectActivity = (Spinner) findViewById(R.id.spinner1);
-		sensDelay = (Spinner) findViewById(R.id.Spinner01);
+		sensDelay = (EditText) findViewById(R.id.editText7);
 		df = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
 		// to be commented later
-		fromDate.setText("01-04-2014");
-		toDate.setText("05-04-2014");
-		expiryDate.setText("20-04-2014");
-		fromTime.setText("00:00:00");
-		toTime.setText("00:00:00");
+		fromDate.setText("22-04-2014");
+		toDate.setText("22-04-2014");
+		expiryDate.setText("25-04-2014");
+		fromTime.setText("17:00:00");
+		toTime.setText("17:00:00");
 		expiryTime.setText("00:00:00");
 
 		queryNo = RegisterMe.username + System.currentTimeMillis();
@@ -205,7 +205,7 @@ public class PublishQuery extends Activity {
 		lat = Double.parseDouble(latitude.getText().toString());
 		lon = Double.parseDouble(longitude.getText().toString());
 		activity = (String) selectActivity.getSelectedItem();
-		delay = sensDelay.getSelectedItem().toString();
+		delay = sensDelay.getText().toString();
 		countMin = Integer.parseInt(minCount.getText().toString());
 		if (deviceCount.getSelectedItem().toString().compareTo("Range") == 0) {
 			countMax = Integer.parseInt(max.getText().toString());
