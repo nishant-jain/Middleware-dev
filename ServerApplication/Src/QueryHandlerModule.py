@@ -50,8 +50,7 @@ class QueryProcessor(threading.Thread):
     def processMessage(self, msg):
         ''' The msg object is actually the raw XMPP message object. Parse it yourself!'''
         newMsg = json.loads(msg['body'])
-        msgType = str(newMsg['msgType'])
-        if msgType=='ProviderResponse':
+        if str(msg['subject'])=='ProviderResponse':
             ''' This is a message which gives the response of some provider which we flooded for query results! '''
             if(str(newMsg['status'])=='Accepted'):
                 #Party! Request accepted!
@@ -76,7 +75,7 @@ class QueryProcessor(threading.Thread):
             else:
                 #Snobby client, rejected our request. Ignore this guy!
                 pass
-        elif msgType=='ProviderData':
+        elif str(msg['subject'])=='ProviderData':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
             
             pass
