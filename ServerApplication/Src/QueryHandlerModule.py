@@ -28,6 +28,7 @@ class QueryProcessor(threading.Thread):
         self.usersServicing = []
         self.fileLinks = []
         self.hostName = str(self.qMessage['from']).split("@")[1]
+        self.waiting = False
         
         
     
@@ -69,6 +70,7 @@ class QueryProcessor(threading.Thread):
                 
                 if(self.currentCount >= eval(str(self.queryObject['countMin']))):
                     #Send final confirmation to client!
+                    self.waiting = True
                     self.sendFinalConfirmation(True)
                     pass
             else:
@@ -183,7 +185,7 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) )
+        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)and(eval(str(self.queryObject['frequency']))<1000/Sensor.minDelay) ).distinct()
         count=0
         for p in u:
                 count=count+p.users.count()
@@ -192,6 +194,8 @@ class QueryProcessor(threading.Thread):
         ''' Possible query to get all users of such sensors in u:
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
+            
+        print 'Found count=' + str(count) + ' for query Number: ' + self.queryNo
         
         if(count>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
