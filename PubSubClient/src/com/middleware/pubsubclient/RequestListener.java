@@ -293,6 +293,10 @@ public class RequestListener extends Service {
 			}
 
 		}
+
+		else if (message.getSubject().equals("De-Registration Successful")) {
+			DeletePreference.ackReceived = true;
+		}
 	}
 
 	void scheduleDataCollection(String queryNo) throws JSONException {
