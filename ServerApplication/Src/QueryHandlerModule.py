@@ -89,14 +89,13 @@ class QueryProcessor(threading.Thread):
         query_possible = self.storeQueryInDB(self.queryObject)
         if(query_possible):
             self.floodProviders()
+            ''' Start a timer to check for enough providers after timeout! '''
+            threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
+            print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
             self.amIDone = True
             return 
-        
-        ''' Start a timer to check for enough providers after timeout! '''
-        threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
-        print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
         
         ''' we have flooded providers now. Should start listening for messages! '''
         while (self.amIDone==False):
@@ -150,6 +149,11 @@ class QueryProcessor(threading.Thread):
             foundFlag = True
         except User.DoesNotExist:
             print "User not in DB"
+            return False
+        
+        qResults = Query.select().where(Query.queryNo==str(qObj['queryNo'])).count()
+        if(qResults!=0):
+            print 'Discarding message for queryNo: ' + str(qObj['queryNo']) + ' as it already existed in DB'
             return False
         
         if foundFlag:
