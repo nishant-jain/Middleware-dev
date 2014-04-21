@@ -103,7 +103,7 @@ class QueryProcessor(threading.Thread):
         while (self.amIDone==False):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
-                function(*args, **kwargs)
+                function(self, *args, **kwargs)
             except Queue.Empty:
                 pass
     
