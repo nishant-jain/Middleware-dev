@@ -128,7 +128,7 @@ class QueryProcessor(threading.Thread):
         ''' Now z has all the users we have to send a request to! '''
         
         toSend = '{"queryNo":"' + str(self.queryNo) + '","sensorType":"' + str(self.queryObject['dataReqd']) + '","frequency":"' + str(self.queryObject['frequency']) + '",'
-        toSend = toSend + '"Activity":"' + str(self.queryObject['Activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "toTime":' + str(self.queryObject['toTime']) + '"}'
+        toSend = toSend + '"Activity":"' + str(self.queryObject['activity']) + '", "fromTime":' + str(self.queryObject['fromTime']) + '", "toTime":' + str(self.queryObject['toTime']) + '"}'
          
         #self.msgHandler.send_message(self.qMessage['from'], toSend)
         serverAppend = '@' + self.hostName
