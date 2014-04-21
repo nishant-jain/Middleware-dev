@@ -1,10 +1,6 @@
 package com.middleware.pubsubclient;
 
 import org.jivesoftware.smack.AccountManager;
-import org.jivesoftware.smack.Chat;
-import org.jivesoftware.smack.ChatManager;
-import org.jivesoftware.smack.ChatManagerListener;
-import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -24,6 +20,8 @@ public class DeletePreference extends DialogPreference {
 	Message delete;
 	boolean deleted = false;
 	PacketListener listen = null;
+
+	static boolean ackReceived = false;
 
 	public DeletePreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -65,41 +63,48 @@ public class DeletePreference extends DialogPreference {
 											// sensor capabilities
 				System.out.println("Request sent to server@103.25.231.23");
 
-				ChatManager chatmanager = conn.getChatManager();
-				conn.getChatManager().addChatListener(
-						new ChatManagerListener() {
-							@Override
-							public void chatCreated(final Chat chat,
-									final boolean createdLocally) {
-								chat.addMessageListener(new MessageListener() {
-									@Override
-									public void processMessage(Chat chat,
-											Message message) {
-										System.out.println("Received message: "
-												+ (message != null ? message
-														.getBody() : "NULL"));
+				/*
+				 * ChatManager chatmanager = conn.getChatManager();
+				 * conn.getChatManager().addChatListener( new
+				 * ChatManagerListener() {
+				 * 
+				 * @Override public void chatCreated(final Chat chat, final
+				 * boolean createdLocally) { chat.addMessageListener(new
+				 * MessageListener() {
+				 * 
+				 * @Override public void processMessage(Chat chat, Message
+				 * message) { System.out.println("Received message: " + (message
+				 * != null ? message .getBody() : "NULL"));
+				 */
 
-										if (message
-												.getSubject()
-												.toString()
-												.equalsIgnoreCase(
-														"De-Registration Successful")) {
-											System.out.println("deleted");
-											try {
-												accMgr.deleteAccount();
-												conn.disconnect();
-												deleted = true;
-											} catch (XMPPException e) {
-												// TODO Auto-generated catch
-												// block
-												e.printStackTrace();
-											}
+				int i = 0;
+				while (i < 400000) {
+					if (ackReceived) {
+						System.out.println("deleted");
+						try {
+							accMgr.deleteAccount();
+							conn.disconnect();
+							deleted = true;
+						} catch (XMPPException e) {
+							// TODO Auto-generated catch
+							// block
+							e.printStackTrace();
+						}
 
-										}
-									}
-								});
-							}
-						});
+						break;
+					}
+
+				}
+				/*
+				 * if (message .getSubject() .toString() .equalsIgnoreCase(
+				 * "De-Registration Successful")) {
+				 * System.out.println("deleted"); try { accMgr.deleteAccount();
+				 * conn.disconnect(); deleted = true; } catch (XMPPException e)
+				 * { // TODO Auto-generated catch // block e.printStackTrace();
+				 * }
+				 * 
+				 * } } }); } });
+				 */
 
 				if (deleted) {
 					alert.setTitle("Account Deleted")
