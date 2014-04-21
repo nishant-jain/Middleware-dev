@@ -47,7 +47,7 @@ class SensorUserRel(baseDBModel):
     
 class Query(baseDBModel):
     username = ForeignKeyField(User, related_name="queries")
-    queryNo= BigIntegerField(unique=True)
+    queryNo= TextField(unique=True)
     dataReqd= CharField()
     frequency = IntegerField() #in Hertz
     Activity= TextField()

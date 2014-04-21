@@ -103,7 +103,7 @@ class RegistrationProcessor(threading.Thread):
             return
         
         print str(userName) + " deleted successfully!"
-        self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="De-Registration Successful!", mbody="Thank you!")
+        self.msgHandler.send_message(mto=str(self.rMessage['from']).split("/")[0], msubject="De-Registration Successful", mbody="Thank you!")
 
         return
     

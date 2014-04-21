@@ -23,7 +23,7 @@ class QueryProcessor(threading.Thread):
         self.q = Queue.Queue()
         self.timeout = 1.0/60.0
         self.amIDone = False
-        self.queryNo = 0
+        self.queryNo = ''
         self.currentCount = 0
         self.usersServicing = []
         self.fileLinks = []
@@ -84,7 +84,7 @@ class QueryProcessor(threading.Thread):
     until it is finished. Ugly but should work for now.'''
     def run(self):
         self.queryObject = json.loads(self.qMessage['body']) #This object now holds the Python Dictionary Object of the JSON query
-        self.queryNo = eval(str(self.queryObject['queryNo']))
+        self.queryNo = str(self.queryObject['queryNo'])
         query_possible = self.storeQueryInDB(self.queryObject)
         if(query_possible):
             self.floodProviders()
@@ -153,7 +153,7 @@ class QueryProcessor(threading.Thread):
         if foundFlag:
             q = Query()
             q.username = uname
-            q.queryNo = eval(str(qObj['queryNo']))
+            q.queryNo = str(qObj['queryNo'])
             q.dataReqd = str(qObj['dataReqd'])
             q.frequency = eval(str(qObj['frequency']))
             q.Latitude = eval(str(qObj['latitude']))
