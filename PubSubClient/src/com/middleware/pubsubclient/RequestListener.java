@@ -68,7 +68,7 @@ public class RequestListener extends Service {
 			e.printStackTrace();
 		}
 		Message msg = new Message();
-		msg.setSubject("DatRequest");
+		msg.setSubject("DataRequest");
 		msg.setBody(json.toString());
 		// try {
 		// actOnMessage(msg);
@@ -113,13 +113,8 @@ public class RequestListener extends Service {
 
 	void actOnMessage(Message message) throws JSONException {
 		if (message.getSubject().equals("DataRequest")) {
-			System.out
-					.println("New request received..Decide whether to serve it or not");
 			System.out.println(message.getBody());
-			System.out
-					.println("Pop up should be created to ask whether servicing the request or not");
-
-			final JSONObject confirmation = new JSONObject();
+						final JSONObject confirmation = new JSONObject();
 			String startTime;
 			String endTime;
 			final String queryNo;

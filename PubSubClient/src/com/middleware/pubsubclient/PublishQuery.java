@@ -3,7 +3,9 @@ package com.middleware.pubsubclient;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -89,8 +91,6 @@ public class PublishQuery extends Activity {
 		toTime.setText("17:00:00");
 		expiryTime.setText("00:00:00");
 
-		queryNo = RegisterMe.username + System.currentTimeMillis();
-
 		getCurrentLocation = (Button) findViewById(R.id.button2);
 		publish = (Button) findViewById(R.id.button1);
 		// lat = (EditText)findViewById(R.id.editText3);
@@ -147,7 +147,7 @@ public class PublishQuery extends Activity {
 
 	}
 
-	public JSONObject generatePayload() throws JSONException {
+	public List<JSONObject> generatePayload() throws JSONException {
 		String sensors;
 		int delay;
 		Long fromEpoch, toEpoch, expiryEpoch;
@@ -155,22 +155,7 @@ public class PublishQuery extends Activity {
 		String activity = "";
 		int gpsDelay, countMin = 1, countMax = 1;
 		StringBuilder sensorName = new StringBuilder("");
-		if (accelerometer.isChecked()) {
-			sensorName.append("Accelerometer,");
-		}
-		if (gps.isChecked()) {
-			sensorName.append("GPS,");
-		}
-		if (gyroscope.isChecked()) {
-			sensorName.append("Gyroscope,");
-		}
-		if (rotation.isChecked()) {
-			sensorName.append("Rotation Vector,");
-		}
-		sensors = sensorName.toString().substring(0,
-				sensorName.toString().length() - 1);
-		System.out.println(sensors);
-
+		
 		Date fromDt = new Date();
 		try {
 			fromDt = df.parse(fromDate.getText().toString() + " "
@@ -213,20 +198,86 @@ public class PublishQuery extends Activity {
 			countMax = Integer.parseInt(max.getText().toString());
 		} else {
 			countMax = countMin;
-			/*
-			 * String query="<sensorNames>"+sensors+"</sensorNames>"
-			 * +"<fromTime>"+fromEpoch+"</fromTime>"
-			 * +"<toTime>"+toEpoch+"</toTime>"
-			 * +"<expiryTime>"+expiryEpoch+"</expiryTime>" +"<location>" +
-			 * "<latitude>"+lat+"</latitude>" + "<longitude>"+lon+"</longitude>"
-			 * + "</location>" +"<activity>"+activity+"</activity>"
-			 * +"<frequency>"+delay+"</frequency>" +"<count>"
-			 * +"<countMin>"+countMin+"</countMin>"
-			 * +"<countMax>"+countMax+"</countMax>" +"</count>";
-			 * System.out.println(query);
-			 */
+			
 		}
-
+		List<JSONObject> all=new ArrayList<JSONObject>();
+		
+		if (accelerometer.isChecked()) {
+			queryNo = RegisterMe.username + System.currentTimeMillis();
+			//sensorName.append("Accelerometer,");
+			query = new JSONObject();
+			query.put("username", RegisterMe.username);
+			query.put("queryNo", queryNo);
+			query.put("dataReqd", "Accelerometer");
+			query.put("fromTime", fromEpoch);
+			query.put("toTime", toEpoch);
+			query.put("expiryTime", expiryEpoch);
+			query.put("latitude", lat);
+			query.put("longitude", lon);
+			query.put("activity", activity);
+			query.put("frequency", delay);
+			query.put("countMin", countMin);
+			query.put("countMax", countMax);
+			all.add(query);
+		}
+		if (gps.isChecked()) {
+			//sensorName.append("GPS,");
+			queryNo = RegisterMe.username + System.currentTimeMillis();
+			query = new JSONObject();
+			query.put("username", RegisterMe.username);
+			query.put("queryNo", queryNo);
+			query.put("dataReqd", "GPS");
+			query.put("fromTime", fromEpoch);
+			query.put("toTime", toEpoch);
+			query.put("expiryTime", expiryEpoch);
+			query.put("latitude", lat);
+			query.put("longitude", lon);
+			query.put("activity", activity);
+			query.put("frequency", delay);
+			query.put("countMin", countMin);
+			query.put("countMax", countMax);
+			all.add(query);
+		}
+		if (gyroscope.isChecked()) {
+			queryNo = RegisterMe.username + System.currentTimeMillis();
+			//sensorName.append("Gyroscope,");
+			queryNo = RegisterMe.username + System.currentTimeMillis();
+			query = new JSONObject();
+			query.put("username", RegisterMe.username);
+			query.put("queryNo", queryNo);
+			query.put("dataReqd", "Gyroscope");
+			query.put("fromTime", fromEpoch);
+			query.put("toTime", toEpoch);
+			query.put("expiryTime", expiryEpoch);
+			query.put("latitude", lat);
+			query.put("longitude", lon);
+			query.put("activity", activity);
+			query.put("frequency", delay);
+			query.put("countMin", countMin);
+			query.put("countMax", countMax);
+			all.add(query);
+		}
+		if (rotation.isChecked()) {
+			//sensorName.append("Rotation Vector,");
+			queryNo = RegisterMe.username + System.currentTimeMillis();
+			query = new JSONObject();
+			query.put("username", RegisterMe.username);
+			query.put("queryNo", queryNo);
+			query.put("dataReqd", "Rotation Vector");
+			query.put("fromTime", fromEpoch);
+			query.put("toTime", toEpoch);
+			query.put("expiryTime", expiryEpoch);
+			query.put("latitude", lat);
+			query.put("longitude", lon);
+			query.put("activity", activity);
+			query.put("frequency", delay);
+			query.put("countMin", countMin);
+			query.put("countMax", countMax);
+			all.add(query);
+		}
+		/*sensors = sensorName.toString().substring(0,
+				sensorName.toString().length() - 1);
+		System.out.println(sensors);
 		query = new JSONObject();
 		query.put("username", RegisterMe.username);
 		query.put("queryNo", queryNo);
@@ -240,62 +291,47 @@ public class PublishQuery extends Activity {
 		query.put("frequency", delay);
 		query.put("countMin", countMin);
 		query.put("countMax", countMax);
-		/*
-		 * String query="<json xmlns=\"urn:xmpp:json:0\">" + "{"
-		 * +"\"username\":"+"\""+RegisterMe.username+"\""+"," +"\"dataReqd\":"+
-		 * "\"" + sensors + "\"" +"," + "\"fromTime\":" + "\"" + fromEpoch +
-		 * "\"" +"," + "\"toTime\":" + "\""+ toEpoch+ "\"" +"," +
-		 * "\"expiryTime\":" + "\""+ expiryEpoch+ "\"" +"," +
-		 * "\"location\":{\"latitude\":"+ "\""+lat+ "\""+",\"longitude\":"+
-		 * "\""+lon+ "\""+"}," + "\"activity\":"+ "\""+activity+ "\""+"," +
-		 * "\"frequency\":"+ "\""+delay+ "\""+"," + "\"count\":{\"countMin\":"+
-		 * "\""+countMin+ "\""+",\"countMax\":"+ "\""+countMax+ "\""+"}" +"}" +
-		 * "</json>";
-		 */
-
+		
 		System.out.println(query.toString());
-		return query;
+		*/
+		return all;
 	}
 
 	public void sendQuery(View v) {
 
 		showMessage = new Builder(this);
 		try {
-			JSONObject query = generatePayload();
+			List<JSONObject> query = generatePayload();
 
 			PubSubManager mgr = new PubSubManager(RegisterMe.conn);
 
-			try {
-				/*
-				 * showMessage.setTitle("Query Submission")
-				 * .setMessage("Not working") .create() .show();
-				 */
-
-				// ItemId is the query number
-				/*
-				 * LeafNode
-				 * testNode=mgr.createNode(""+System.currentTimeMillis());
-				 * testNode.sendConfigurationForm(NodeConfig.setNodeConfig());
-				 * System.out.println("Test node created"); testNode.send(new
-				 * PayloadItem
-				 * <SimplePayload>(RegisterMe.username+System.currentTimeMillis
-				 * (), new SimplePayload("query", "pubsub:client:query",
-				 * "<book xmlns='pubsub:test:book'><title>Lord of the Rings</title></book>"
-				 * )));
-				 */
-
+			Iterator<JSONObject> traverse= query.iterator();
+			
+			while(traverse.hasNext())
+			{
 				Message query2 = new Message("server@103.25.231.23",
 						Message.Type.chat);
 				query2.setSubject("Query");
-				query2.setBody(query.toString());
+				query2.setBody(traverse.next().toString());
+			//	System.out.println(query2.getBody());
 				RegisterMe.conn.sendPacket(query2);
+			}
+			showMessage.setTitle("Query Submission")
+			.setMessage("Successful").create().show();
+			//System.out.println("Sensors selected:"+ query.size());
+			/*try {
+						Message query2 = new Message("server@103.25.231.23",
+						Message.Type.chat);
+				query2.setSubject("Query");
+				query2.setBody(query.toString());
+			//	RegisterMe.conn.sendPacket(query2);
 				showMessage.setTitle("Query Submission")
 						.setMessage("Successful").create().show();
 
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 		} catch (Exception e) {
 			showMessage.setTitle("Error!")
 					.setMessage("Please ensure that data entered is valid")

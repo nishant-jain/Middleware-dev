@@ -2,9 +2,12 @@ package com.middleware.pubsubclient;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+
+import org.jivesoftware.smack.packet.Message;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -20,6 +23,7 @@ import android.hardware.SensorManager;
 import android.os.Environment;
 import android.os.IBinder;
 import android.widget.Toast;
+import au.com.bytecode.opencsv.CSVReader;
 
 public class AccReadings extends Service implements SensorEventListener {
 
@@ -36,6 +40,37 @@ public class AccReadings extends Service implements SensorEventListener {
 		// Toast.LENGTH_SHORT).show();
 
 	}
+	
+	public void sendAsMessage()
+	{
+		StringBuilder data=new StringBuilder();
+		CSVReader reader;
+		try {
+			reader = new CSVReader(new FileReader(file));
+		
+	    String [] nextLine;
+	    
+			while ((nextLine = reader.readNext()) != null) {
+			  for(int i=0;i<nextLine.length;i++)
+			    {
+				  data.append(nextLine[i]);
+				  data.append(",");
+				 }
+			  data.append("\n");
+			} 
+			Message sensordata = new Message("server@103.25.231.23",Message.Type.chat);
+			sensordata.setSubject("Data");
+			sensordata.setBody(data.toString());
+			RegisterMe.conn.sendPacket(sensordata);
+		//	System.out.println(sensordata.getBody());
+		}catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.print(data.toString());
+		
+	}
+	
 
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
@@ -64,6 +99,7 @@ public class AccReadings extends Service implements SensorEventListener {
 	public void onDestroy() {
 		super.onDestroy();
 		mSensorManager.unregisterListener(this);
+		sendAsMessage();
 
 		try {
 			if (writer != null) {
