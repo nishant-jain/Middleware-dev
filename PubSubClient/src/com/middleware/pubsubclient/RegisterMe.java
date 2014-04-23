@@ -303,11 +303,9 @@ public class RegisterMe extends Activity
 				@Override
 				public void onReceive(Context context, Intent intent)
 					{
-						showDialog
-								.setTitle("Sorry")
-								.setMessage(
-										"Not enough capable users. Query can't be fulfilled.")
-								.create().show();
+						showDialog.setTitle("Message from server")
+								.setMessage(intent.getStringExtra("toShow")).create()
+								.show();
 					}
 			};
 

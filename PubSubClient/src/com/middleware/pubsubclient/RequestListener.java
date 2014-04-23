@@ -39,85 +39,12 @@ public class RequestListener extends Service
 		public static boolean running = false;
 		PendingIntent pendIntent;
 
-<<<<<<< HEAD
 		@Override
 		public IBinder onBind(Intent arg0)
 			{
 				// TODO Auto-generated method stub
 				return null;
 			}
-=======
-	@Override
-	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void onCreate() {
-		super.onCreate();
-
-		filter = new MessageTypeFilter(Message.Type.normal);
-
-		// will not be needed when actually listening for messages
-		// -------------------------------------------------------
-
-		JSONObject json = new JSONObject();
-		try {
-			json.put("sensorType", "Accelerometer");
-			json.put("fromTime", 1397627067);
-			json.put("toTime", 1397629067);
-			json.put("Activity", "driving");
-			json.put("frequency", "2");
-			json.put("queryNo", "123456778");
-		}
-
-		catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Message msg = new Message();
-		msg.setSubject("DataRequest");
-		msg.setBody(json.toString());
-		// try {
-		// actOnMessage(msg);
-		// } catch (JSONException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-
-		// final Handler handler = new Handler();
-		// handler.postDelayed(new Runnable() {
-		// @Override
-		// public void run() {
-		//
-		// JSONObject json2 = new JSONObject();
-		// try {
-		// // json.put("sensorType", "Accelerometer");
-		// // json.put("fromTime",1397627067);
-		// // json.put("toTime", 1397629067);
-		// // json.put("Activity", "driving");
-		// json2.put("queryNo", "123456778");
-		// // json.put("frequency","2");
-		// json2.put("finalStatus", "Confirmed");
-		// // json.put("errorMessage",
-		// // "Already got the required providers! :)");
-		// } catch (JSONException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// Message msg2 = new Message();
-		// msg2.setSubject("FinalConfirmation");
-		// msg2.setBody(json2.toString());
-		// try {
-		// actOnMessage(msg2);
-		// } catch (JSONException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-		// }, 8000);
->>>>>>> 297edab2c3382164999b54a27bfb01c5bd6b5f67
 
 		@Override
 		public void onCreate()
@@ -184,112 +111,13 @@ public class RequestListener extends Service
 				// }
 				// }
 				// }, 8000);
-
-<<<<<<< HEAD
-=======
-	void actOnMessage(Message message) throws JSONException {
-		if (message.getSubject().equals("DataRequest")) {
-			System.out.println(message.getBody());
-						final JSONObject confirmation = new JSONObject();
-			String startTime;
-			String endTime;
-			final String queryNo;
-			String sensor, frequency, activity;
-			String request = message.getBody();
-			// try {
-			final JSONObject o = new JSONObject(request);
-			startTime = o.getString("fromTime");
-			endTime = o.getString("toTime");
-			queryNo = o.getString("queryNo");
-			sensor = o.getString("sensorType"); // needs to be parsed for
-												// multiple sensor types
-			frequency = o.getString("frequency");
-			activity = o.getString("Activity");
-			Date start = new Date(Long.parseLong(startTime) * 1000);
-			Date end = new Date(Long.parseLong(endTime) * 1000);
-
-			final Message requestAck = new Message("server@103.25.231.23",
-					Message.Type.chat);
-			requestAck.setSubject("ProviderResponse");
-			SimpleDateFormat format = new SimpleDateFormat(
-					"dd/MM/yyyy HH:mm:ss");
-			String formattedStart = format.format(start);
-			String formattedEnd = format.format(end);
-
-			/*
-			 * AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			 * builder.setTitle("New Request");
-			 * builder.setIcon(R.drawable.ic_launcher);
-			 * builder.setMessage("Are you willing to service this request for "
-			 * + sensor + " from " + formattedStart + " to " + formattedEnd +
-			 * " while you are " + activity + " ?");
-			 * builder.setPositiveButton("Yes", new
-			 * DialogInterface.OnClickListener() {
-			 * 
-			 * @Override public void onClick(DialogInterface dialog, int
-			 * whichButton) { // send Confirmation to Server
-			 */
-
-			// Assume YES for now
-
-			dataRequests.put(queryNo, o);
-			try {
-				confirmation.put("queryNo", queryNo);
-				confirmation.put("status", "Accepted");
-
-				requestAck.setBody(confirmation.toString());
-				RegisterMe.conn.sendPacket(requestAck);
-			} catch (JSONException e) {
-				// TODO
-				// Auto-generated
-				// catch block
-				e.printStackTrace();
-			}
-			/*
-			 * } }); builder.setNegativeButton("No", new
-			 * DialogInterface.OnClickListener() {
-			 * 
-			 * @Override public void onClick(DialogInterface dialog, int
-			 * whichButton) { // Request denied try {
-			 * confirmation.put("queryNo", queryNo); confirmation.put("status",
-			 * "Denied");
-			 * 
-			 * requestAck.setBody(confirmation.toString());
-			 * RegisterMe.conn.sendPacket(requestAck); } catch (JSONException e)
-			 * { // TODO // Auto-generated // catch block e.printStackTrace(); }
-			 * } }); AlertDialog alert = builder.create();
-			 * alert.getWindow().setType(
-			 * WindowManager.LayoutParams.TYPE_SYSTEM_ALERT); alert.show();
-			 * 
-			 * } catch (JSONException e) { // TODO Auto-generated catch block
-			 * e.printStackTrace(); }
-			 */
-
-		}
-
-		else if (message.getSubject().equals("Final Confirmation")) {
-			JSONObject messageBody = new JSONObject(message.getBody());
-			String queryNo = messageBody.getString("queryNo");
-			String finalStatus = messageBody.getString("finalStatus");
-			if (finalStatus.equals("Confirmed")
-					&& dataRequests.containsKey(queryNo)) {
-				System.out
-						.println("Query no: "
-								+ queryNo
-								+ ". You decided to serve, got selected by the server. Now provide the data :)");
->>>>>>> 297edab2c3382164999b54a27bfb01c5bd6b5f67
 			}
 
 		void actOnMessage(Message message) throws JSONException
 			{
 				if (message.getSubject().equals("DataRequest"))
 					{
-						System.out
-								.println("New request received..Decide whether to serve it or not");
 						System.out.println(message.getBody());
-						System.out
-								.println("Pop up should be created to ask whether servicing the request or not");
-
 						final JSONObject confirmation = new JSONObject();
 						String startTime;
 						String endTime;
@@ -322,7 +150,6 @@ public class RequestListener extends Service
 						 * AlertDialog.Builder builder = new AlertDialog.Builder(this);
 						 * builder.setTitle("New Request");
 						 * builder.setIcon(R.drawable.ic_launcher);
-						 * 
 						 * builder.setMessage("Are you willing to service this request for "
 						 * + sensor + " from " + formattedStart + " to " + formattedEnd +
 						 * " while you are " + activity + " ?");
@@ -330,8 +157,8 @@ public class RequestListener extends Service
 						 * DialogInterface.OnClickListener() {
 						 * 
 						 * @Override public void onClick(DialogInterface dialog, int
-						  whichButton) { // send Confirmation to Server
-						 
+						 * whichButton) { // send Confirmation to Server
+						 */
 
 						// Assume YES for now
 
@@ -372,6 +199,128 @@ public class RequestListener extends Service
 						 */
 
 					}
+
+				// else if (message.getSubject().equals("Final Confirmation"))
+				// {
+				// JSONObject messageBody = new JSONObject(message.getBody());
+				// String queryNo = messageBody.getString("queryNo");
+				// String finalStatus = messageBody.getString("finalStatus");
+				// if (finalStatus.equals("Confirmed")
+				// && dataRequests.containsKey(queryNo))
+				// {
+				// System.out
+				// .println("Query no: "
+				// + queryNo
+				// +
+				// ". You decided to serve, got selected by the server. Now provide the data :)");
+				//
+				// }
+
+				// void actOnMessage(Message message) throws
+				// JSONException
+				// {
+				// if (message.getSubject().equals("DataRequest"))
+				// {
+				// System.out
+				// .println("New request received..Decide whether to serve it or not");
+				// System.out.println(message.getBody());
+				// System.out
+				// .println("Pop up should be created to ask whether servicing the request or not");
+				//
+				// final JSONObject confirmation = new JSONObject();
+				// String startTime;
+				// String endTime;
+				// final String queryNo;
+				// String sensor, frequency, activity;
+				// String request = message.getBody();
+				// // try {
+				// final JSONObject o = new JSONObject(request);
+				// startTime = o.getString("fromTime");
+				// endTime = o.getString("toTime");
+				// queryNo = o.getString("queryNo");
+				// sensor = o.getString("sensorType"); // needs to be
+				// // parsed for
+				// // multiple sensor
+				// // types
+				// frequency = o.getString("frequency");
+				// activity = o.getString("Activity");
+				// Date start = new Date(Long.parseLong(startTime) *
+				// 1000);
+				// Date end = new Date(Long.parseLong(endTime) * 1000);
+				//
+				// final Message requestAck = new
+				// Message("server@103.25.231.23",
+				// Message.Type.chat);
+				// requestAck.setSubject("ProviderResponse");
+				// SimpleDateFormat format = new SimpleDateFormat(
+				// "dd/MM/yyyy HH:mm:ss");
+				// String formattedStart = format.format(start);
+				// String formattedEnd = format.format(end);
+				//
+				// /*
+				// * AlertDialog.Builder builder = new
+				// AlertDialog.Builder(this);
+				// * builder.setTitle("New Request");
+				// * builder.setIcon(R.drawable.ic_launcher);
+				// *
+				// *
+				// builder.setMessage("Are you willing to service this request for "
+				// * + sensor + " from " + formattedStart + " to " +
+				// formattedEnd +
+				// * " while you are " + activity + " ?");
+				// * builder.setPositiveButton("Yes", new
+				// * DialogInterface.OnClickListener() {
+				// *
+				// * @Override public void onClick(DialogInterface
+				// dialog, int
+				// whichButton) { // send Confirmation to Server
+				//
+				//
+				// // Assume YES for now
+				//
+				// dataRequests.put(queryNo, o);
+				// try
+				// {
+				// confirmation.put("queryNo", queryNo);
+				// confirmation.put("status", "Accepted");
+				//
+				// requestAck.setBody(confirmation.toString());
+				// RegisterMe.conn.sendPacket(requestAck);
+				// }
+				// catch (JSONException e)
+				// {
+				// // TODO
+				// // Auto-generated
+				// // catch block
+				// e.printStackTrace();
+				// }
+				// /*
+				// * } }); builder.setNegativeButton("No", new
+				// * DialogInterface.OnClickListener() {
+				// *
+				// * @Override public void onClick(DialogInterface
+				// dialog, int
+				// * whichButton) { // Request denied try {
+				// * confirmation.put("queryNo", queryNo);
+				// confirmation.put("status",
+				// * "Denied");
+				// *
+				// * requestAck.setBody(confirmation.toString());
+				// * RegisterMe.conn.sendPacket(requestAck); } catch
+				// (JSONException e)
+				// * { // TODO // Auto-generated // catch block
+				// e.printStackTrace(); }
+				// * } }); AlertDialog alert = builder.create();
+				// * alert.getWindow().setType(
+				// * WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+				// alert.show();
+				// *
+				// * } catch (JSONException e) { // TODO Auto-generated
+				// catch block
+				// * e.printStackTrace(); }
+				// */
+
+				// }
 
 				else if (message.getSubject().equals("Final Confirmation"))
 					{
@@ -489,10 +438,26 @@ public class RequestListener extends Service
 
 				else if (message.getSubject().equalsIgnoreCase("isQueryPossible"))
 					{
-						System.out.println("Sorry. Not enough capable users.");
-						Intent iQP = new Intent("buildAlert");
-						iQP.putExtra("toShow", "Sorry, not enough capable users");
-						LocalBroadcastManager.getInstance(this).sendBroadcast(iQP);
+
+						final JSONObject o = new JSONObject(message.getBody());
+						if (!o.get("queryAck").equals("accepted"))
+							{
+								System.out.println("Sorry. Not enough capable users.");
+								Intent iQP = new Intent("buildAlert");
+								iQP.putExtra("toShow", "Sorry, not enough capable users");
+								LocalBroadcastManager.getInstance(this)
+										.sendBroadcast(iQP);
+							}
+
+						else
+							{
+								System.out.println("Enough capable users. :)");
+								Intent iQP = new Intent("buildAlert");
+								iQP.putExtra("toShow", "Enough capable users. :)");
+								LocalBroadcastManager.getInstance(this)
+										.sendBroadcast(iQP);
+							}
+
 					}
 			}
 
@@ -502,34 +467,40 @@ public class RequestListener extends Service
 				// String sensors = messageBody.getString("sensorType");
 				// String frequency = messageBody.getString("frequency");
 				// String activity = messageBody.getString(activity");
-				// String fromTime = messageBody.getString("fromTime");
-				// String endTime = messageBody.getString("endTime");
+				String fromTime = messageBody.getString("fromTime");
+				String endTime = messageBody.getString("toTime");
 
+				System.out.println("Query No: " + queryNo + ", Start Time: " + fromTime
+						+ ", End Time: " + endTime);
 				Intent intent = new Intent("dataRequest");
 				intent.putExtra("whatToDo", "start");
 				PendingIntent pendingIntent = PendingIntent.getBroadcast(
 						this.getApplicationContext(), 1234, intent, 0);
-				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-				alarmManager.set(AlarmManager.RTC_WAKEUP,
-						System.currentTimeMillis() + (5000), pendingIntent);
-
+				// AlarmManager alarmManager = (AlarmManager)
+				// getSystemService(ALARM_SERVICE);
 				// alarmManager.set(AlarmManager.RTC_WAKEUP,
-				// Long.parseLong(fromTime),
-				// pendingIntent);
+				// System.currentTimeMillis() + (5000), pendingIntent);
 
-				System.out.println("Set start");
+				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+				alarmManager.set(AlarmManager.RTC_WAKEUP, Long.parseLong(fromTime),
+						pendingIntent);
+
+				System.out.println("Sent broadcast to start service");
 
 				Intent intent2 = new Intent("dataStopRequest");
 				intent2.putExtra("whatToDo", "stop");
 				PendingIntent pendingIntent2 = PendingIntent.getBroadcast(
 						this.getApplicationContext(), 9876, intent2, 0);
-				AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
-				alarmManager2.set(AlarmManager.RTC_WAKEUP,
-						System.currentTimeMillis() + (9000), pendingIntent2);
-
+				// AlarmManager alarmManager2 = (AlarmManager)
+				// getSystemService(ALARM_SERVICE);
 				// alarmManager2.set(AlarmManager.RTC_WAKEUP,
-				// System.currentTimeMillis() + (50000), pendingIntent2);
-				// System.out.println("Set stop");
+				// System.currentTimeMillis() + (9000), pendingIntent2);
+
+				AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
+				alarmManager2.set(AlarmManager.RTC_WAKEUP, Long.parseLong(endTime),
+						pendingIntent2);
+
+				System.out.println("Sent broadcast to stop service");
 
 				// scheduler.set(AlarmManager.RTC_WAKEUP,
 				// start.getTime(),
