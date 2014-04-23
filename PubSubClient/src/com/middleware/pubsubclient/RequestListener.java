@@ -39,12 +39,85 @@ public class RequestListener extends Service
 		public static boolean running = false;
 		PendingIntent pendIntent;
 
+<<<<<<< HEAD
 		@Override
 		public IBinder onBind(Intent arg0)
 			{
 				// TODO Auto-generated method stub
 				return null;
 			}
+=======
+	@Override
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+
+		filter = new MessageTypeFilter(Message.Type.normal);
+
+		// will not be needed when actually listening for messages
+		// -------------------------------------------------------
+
+		JSONObject json = new JSONObject();
+		try {
+			json.put("sensorType", "Accelerometer");
+			json.put("fromTime", 1397627067);
+			json.put("toTime", 1397629067);
+			json.put("Activity", "driving");
+			json.put("frequency", "2");
+			json.put("queryNo", "123456778");
+		}
+
+		catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Message msg = new Message();
+		msg.setSubject("DataRequest");
+		msg.setBody(json.toString());
+		// try {
+		// actOnMessage(msg);
+		// } catch (JSONException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+
+		// final Handler handler = new Handler();
+		// handler.postDelayed(new Runnable() {
+		// @Override
+		// public void run() {
+		//
+		// JSONObject json2 = new JSONObject();
+		// try {
+		// // json.put("sensorType", "Accelerometer");
+		// // json.put("fromTime",1397627067);
+		// // json.put("toTime", 1397629067);
+		// // json.put("Activity", "driving");
+		// json2.put("queryNo", "123456778");
+		// // json.put("frequency","2");
+		// json2.put("finalStatus", "Confirmed");
+		// // json.put("errorMessage",
+		// // "Already got the required providers! :)");
+		// } catch (JSONException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// Message msg2 = new Message();
+		// msg2.setSubject("FinalConfirmation");
+		// msg2.setBody(json2.toString());
+		// try {
+		// actOnMessage(msg2);
+		// } catch (JSONException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
+		// }, 8000);
+>>>>>>> 297edab2c3382164999b54a27bfb01c5bd6b5f67
 
 		@Override
 		public void onCreate()
@@ -112,6 +185,99 @@ public class RequestListener extends Service
 				// }
 				// }, 8000);
 
+<<<<<<< HEAD
+=======
+	void actOnMessage(Message message) throws JSONException {
+		if (message.getSubject().equals("DataRequest")) {
+			System.out.println(message.getBody());
+						final JSONObject confirmation = new JSONObject();
+			String startTime;
+			String endTime;
+			final String queryNo;
+			String sensor, frequency, activity;
+			String request = message.getBody();
+			// try {
+			final JSONObject o = new JSONObject(request);
+			startTime = o.getString("fromTime");
+			endTime = o.getString("toTime");
+			queryNo = o.getString("queryNo");
+			sensor = o.getString("sensorType"); // needs to be parsed for
+												// multiple sensor types
+			frequency = o.getString("frequency");
+			activity = o.getString("Activity");
+			Date start = new Date(Long.parseLong(startTime) * 1000);
+			Date end = new Date(Long.parseLong(endTime) * 1000);
+
+			final Message requestAck = new Message("server@103.25.231.23",
+					Message.Type.chat);
+			requestAck.setSubject("ProviderResponse");
+			SimpleDateFormat format = new SimpleDateFormat(
+					"dd/MM/yyyy HH:mm:ss");
+			String formattedStart = format.format(start);
+			String formattedEnd = format.format(end);
+
+			/*
+			 * AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			 * builder.setTitle("New Request");
+			 * builder.setIcon(R.drawable.ic_launcher);
+			 * builder.setMessage("Are you willing to service this request for "
+			 * + sensor + " from " + formattedStart + " to " + formattedEnd +
+			 * " while you are " + activity + " ?");
+			 * builder.setPositiveButton("Yes", new
+			 * DialogInterface.OnClickListener() {
+			 * 
+			 * @Override public void onClick(DialogInterface dialog, int
+			 * whichButton) { // send Confirmation to Server
+			 */
+
+			// Assume YES for now
+
+			dataRequests.put(queryNo, o);
+			try {
+				confirmation.put("queryNo", queryNo);
+				confirmation.put("status", "Accepted");
+
+				requestAck.setBody(confirmation.toString());
+				RegisterMe.conn.sendPacket(requestAck);
+			} catch (JSONException e) {
+				// TODO
+				// Auto-generated
+				// catch block
+				e.printStackTrace();
+			}
+			/*
+			 * } }); builder.setNegativeButton("No", new
+			 * DialogInterface.OnClickListener() {
+			 * 
+			 * @Override public void onClick(DialogInterface dialog, int
+			 * whichButton) { // Request denied try {
+			 * confirmation.put("queryNo", queryNo); confirmation.put("status",
+			 * "Denied");
+			 * 
+			 * requestAck.setBody(confirmation.toString());
+			 * RegisterMe.conn.sendPacket(requestAck); } catch (JSONException e)
+			 * { // TODO // Auto-generated // catch block e.printStackTrace(); }
+			 * } }); AlertDialog alert = builder.create();
+			 * alert.getWindow().setType(
+			 * WindowManager.LayoutParams.TYPE_SYSTEM_ALERT); alert.show();
+			 * 
+			 * } catch (JSONException e) { // TODO Auto-generated catch block
+			 * e.printStackTrace(); }
+			 */
+
+		}
+
+		else if (message.getSubject().equals("Final Confirmation")) {
+			JSONObject messageBody = new JSONObject(message.getBody());
+			String queryNo = messageBody.getString("queryNo");
+			String finalStatus = messageBody.getString("finalStatus");
+			if (finalStatus.equals("Confirmed")
+					&& dataRequests.containsKey(queryNo)) {
+				System.out
+						.println("Query no: "
+								+ queryNo
+								+ ". You decided to serve, got selected by the server. Now provide the data :)");
+>>>>>>> 297edab2c3382164999b54a27bfb01c5bd6b5f67
 			}
 
 		void actOnMessage(Message message) throws JSONException
