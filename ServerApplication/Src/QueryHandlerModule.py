@@ -107,7 +107,7 @@ class QueryProcessor(threading.Thread):
                             
                     ''' Set expiry timeout'''
                     print 'Setting data collection timeout for queryNo: ' + self.queryNo + ' for ' + str(toSet) + ' seconds'
-                    threading.Timer(toSet, self.putDataCollectionTimeoutOnThread)
+                    threading.Timer(toSet, self.putDataCollectionTimeoutOnThread).start()
                     
             else:
                 #Snobby client, rejected our request. Ignore this guy!
