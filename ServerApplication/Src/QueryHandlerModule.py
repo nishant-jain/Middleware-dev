@@ -50,6 +50,7 @@ class QueryProcessor(threading.Thread):
         
         
     def dataCollectionTimeout(self):
+        print 'Data collection timeout ringing for queryNo: ' + self.queryNo
         if(self.receivedCount < self.currentCount):
             #We have timed out and haven't received enough data responses yet. Unfortunate ending to our query.
             #Just die for now, but 
@@ -97,14 +98,15 @@ class QueryProcessor(threading.Thread):
                         toSet = (self.queryDBObject.toTime - datetime.datetime.now()).total_seconds() + 60
                         if(toSet <= 20):
                             #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
-                            toSet = 240
+                            toSet = 240.0
                     else:
                         toSet = (self.queryDBObject.expiryTime - datetime.datetime.now()).total_seconds() + 60
                         if(toSet <= 20):
                             #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
-                            toSet = 240
+                            toSet = 240.0
                             
                     ''' Set expiry timeout'''
+                    print 'Setting data collection timeout for queryNo: ' + self.queryNo + ' for ' + toSet + ' seconds'
                     threading.Timer(toSet, self.putDataCollectionTimeoutOnThread)
                     
             else:
