@@ -5,7 +5,7 @@ Created on 11-Mar-2014
 '''
 import json
 import threading
-from Models import Sensor, User, SensorUserRel
+from Models import Sensor, User, SensorUserRel, Query
 import datetime
 
 class RegistrationProcessor(threading.Thread):
@@ -94,6 +94,9 @@ class RegistrationProcessor(threading.Thread):
             u = User.get(User.username==userName)
             sensorObjects = SensorUserRel.select().where(SensorUserRel.user==u)
             for i in sensorObjects:
+                i.delete_instance()
+            queryObjects = Query.select().where(Query.username==u)
+            for i in queryObjects:
                 i.delete_instance()
             u.delete_instance()
         except User.DoesNotExist:
