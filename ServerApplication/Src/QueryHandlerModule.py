@@ -124,6 +124,8 @@ class QueryProcessor(threading.Thread):
                 ''' Time to die! '''
                 self.amIDone = True
                 pass
+        else:
+            print 'Got unrecognized message for queryNo: ' + str(self.queryNo) + '. Message subject: ' + str(msg['subject'])
             
             
     ''' This is the method that runs on starting this thread. 
