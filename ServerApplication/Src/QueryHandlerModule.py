@@ -86,7 +86,25 @@ class QueryProcessor(threading.Thread):
                     #Send final confirmation to client!
                     self.waiting = True
                     self.sendFinalConfirmation(True)
-                    pass
+                    
+                    ''' Set Timeout for query expiry time! '''
+        
+                    #Check for bad query expiry times! 
+                    if self.queryDBObject.expiryTime < datetime.datetime.now():
+                        '''Bad time. Set query expiry time to be toTime-now() + 60 seconds'''
+                        toSet = (self.queryDBObject.toTime - datetime.datetime.now()).total_seconds() + 60
+                        if(toSet <= 20):
+                            #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
+                            toSet = 240
+                    else:
+                        toSet = (self.queryDBObject.expiryTime - datetime.datetime.now()).total_seconds() + 60
+                        if(toSet <= 20):
+                            #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
+                            toSet = 240
+                            
+                    ''' Set expiry timeout'''
+                    threading.Timer(toSet, self.putDataCollectionTimeoutOnThread)
+                    
             else:
                 #Snobby client, rejected our request. Ignore this guy!
                 pass
@@ -128,23 +146,7 @@ class QueryProcessor(threading.Thread):
             return 
         
         ''' we have flooded providers now. Should start listening for messages! '''
-        ''' Set Timeout for query expiry time! '''
-        
-        #Check for bad query expiry times! 
-        if self.queryDBObject.expiryTime < datetime.datetime.now():
-            '''Bad time. Set query expiry time to be toTime-now() + 60 seconds'''
-            toSet = (self.queryDBObject.toTime - datetime.datetime.now()).total_seconds() + 60
-            if(toSet <= 20):
-                #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
-                toSet = 240
-        else:
-            toSet = (self.queryDBObject.expiryTime - datetime.datetime.now()).total_seconds() + 60
-            if(toSet <= 20):
-                #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
-                toSet = 240
-                
-        ''' Set expiry timeout'''
-        threading.Timer(toSet, self.putDataCollectionTimeoutOnThread)
+       
         
         while (self.amIDone==False):
             try:
