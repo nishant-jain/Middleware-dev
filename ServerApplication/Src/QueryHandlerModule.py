@@ -106,7 +106,7 @@ class QueryProcessor(threading.Thread):
                             toSet = 240.0
                             
                     ''' Set expiry timeout'''
-                    print 'Setting data collection timeout for queryNo: ' + self.queryNo + ' for ' + toSet + ' seconds'
+                    print 'Setting data collection timeout for queryNo: ' + self.queryNo + ' for ' + str(toSet) + ' seconds'
                     threading.Timer(toSet, self.putDataCollectionTimeoutOnThread)
                     
             else:
