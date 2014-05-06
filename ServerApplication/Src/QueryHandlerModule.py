@@ -40,6 +40,8 @@ class QueryProcessor(threading.Thread):
         if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
+            ''' Time to die! '''
+            self.amIDone = True
             return
 
         
