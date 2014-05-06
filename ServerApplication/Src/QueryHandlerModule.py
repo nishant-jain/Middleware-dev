@@ -26,10 +26,11 @@ class QueryProcessor(threading.Thread):
         self.queryNo = ''
         self.currentCount = 0
         self.usersServicing = []
-        self.fileLinks = []
+        self.finalDataPackage = {}
+        self.finalDataPackage['noOfFiles'] = 0
         self.hostName = str(self.qMessage['from']).split("@")[1]
         self.waiting = False
-        
+        self.receivedCount = 0
         
     
     def onThread(self, function, *args, **kwargs):
@@ -77,8 +78,21 @@ class QueryProcessor(threading.Thread):
                 pass
         elif str(msg['subject'])=='ProviderData':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
+            ''' UPDATE - The data provided is in the form of a JSON message. Parse it and store it in our response message! '''
+            curCount = self.finalDataPackage['noOfFiles']
+            curCount += 1
+            self.finalDataPackage['sensorData' + str(curCount)] = newMsg['sensorData']
+            self.finalDataPackage['noOfFiles'] = curCount
+            self.receivedCount += 1
+            if(curCount >= self.currentCount):
+                'We are done now! Send the data back to the requester and be done with life now!'
+                msgToSend = str(json.dumps(self.finalDataPackage))
+                self.msgHandler.send_message(mto=self.qMessage['from'], mbody=msgToSend, msubject='RequestedData')
+                
+                ''' Time to die! '''
+                self.amIDone = True
+                pass
             
-            pass
             
     ''' This is the method that runs on starting this thread. 
     EDIT - It is now more of an event loop, listening for more messages and stuff to do for this query
@@ -92,6 +106,8 @@ class QueryProcessor(threading.Thread):
             ''' Start a timer to check for enough providers after timeout! '''
             threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
             print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
+            self.finalDataPackage['sensorType'] = str(self.queryObject['dataReqd'])
+            self.finalDataPackage['queryNo'] = self.queryNo
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
             self.amIDone = True
