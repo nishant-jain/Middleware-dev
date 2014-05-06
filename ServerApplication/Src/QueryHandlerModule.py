@@ -76,7 +76,7 @@ class QueryProcessor(threading.Thread):
             else:
                 #Snobby client, rejected our request. Ignore this guy!
                 pass
-        elif str(msg['subject'])=='ProviderData':
+        elif str(msg['subject'])=='Data':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
             ''' UPDATE - The data provided is in the form of a JSON message. Parse it and store it in our response message! '''
             curCount = self.finalDataPackage['noOfFiles']
