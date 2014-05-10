@@ -26,10 +26,11 @@ class QueryProcessor(threading.Thread):
         self.queryNo = ''
         self.currentCount = 0
         self.usersServicing = []
-        self.fileLinks = []
+        self.finalDataPackage = {}
+        self.finalDataPackage['noOfFiles'] = 0
         self.hostName = str(self.qMessage['from']).split("@")[1]
         self.waiting = False
-        
+        self.receivedCount = 0
         
     
     def onThread(self, function, *args, **kwargs):
@@ -39,12 +40,29 @@ class QueryProcessor(threading.Thread):
         if(self.currentCount < eval(str(self.queryObject['countMin']))):
             #We have timed out and haven't received enough providers yet. We should regrettably inform the requester and close the transaction.
             self.sendFinalConfirmation(False)
-            self.amIDone = True #Causes the thread to now exit!
+            ''' Time to die! '''
+            self.amIDone = True
             return
 
         
     def putProviderRequestTimeoutOnThread(self):
         self.onThread(self.providerRequestTimeout)
+        
+        
+    def dataCollectionTimeout(self):
+        print 'Data collection timeout ringing for queryNo: ' + self.queryNo
+        if(self.receivedCount < self.currentCount):
+            #We have timed out and haven't received enough data responses yet. Unfortunate ending to our query.
+            #Just die for now, but 
+            ''' TODO: Send a sorry message to the client! '''
+            print 'Timed out on expiry time but not enough data responses. Dying now!'
+            self.amIDone = True
+            
+            return
+
+        
+    def putDataCollectionTimeoutOnThread(self):
+        self.onThread(self.dataCollectionTimeout)
 
         
     def processMessage(self, msg):
@@ -71,14 +89,48 @@ class QueryProcessor(threading.Thread):
                     #Send final confirmation to client!
                     self.waiting = True
                     self.sendFinalConfirmation(True)
-                    pass
+                    
+                    ''' Set Timeout for query expiry time! '''
+        
+                    #Check for bad query expiry times! 
+                    if self.queryDBObject.expiryTime < datetime.datetime.now():
+                        '''Bad time. Set query expiry time to be toTime-now() + 60 seconds'''
+                        toSet = (self.queryDBObject.toTime - datetime.datetime.now()).total_seconds() + 60
+                        if(toSet <= 20):
+                            #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
+                            toSet = 240.0
+                    else:
+                        toSet = (self.queryDBObject.expiryTime - datetime.datetime.now()).total_seconds() + 60
+                        if(toSet <= 20):
+                            #Something is really bad. Just set expiry time out to 4 minutes and pray its all good.
+                            toSet = 240.0
+                            
+                    ''' Set expiry timeout'''
+                    print 'Setting data collection timeout for queryNo: ' + self.queryNo + ' for ' + str(toSet) + ' seconds'
+                    threading.Timer(toSet, self.putDataCollectionTimeoutOnThread).start()
+                    
             else:
                 #Snobby client, rejected our request. Ignore this guy!
                 pass
-        elif str(msg['subject'])=='ProviderData':
+        elif str(msg['subject'])=='Data':
             ''' This is a message which somehow provides the final data given by the provider! We're nearly done now.'''
+            ''' UPDATE - The data provided is in the form of a JSON message. Parse it and store it in our response message! '''
+            curCount = self.finalDataPackage['noOfFiles']
+            curCount += 1
+            self.finalDataPackage['sensorData' + str(curCount)] = newMsg['sensorData']
+            self.finalDataPackage['noOfFiles'] = curCount
+            self.receivedCount += 1
+            if(curCount >= self.currentCount):
+                'We are done now! Send the data back to the requester and be done with life now!'
+                msgToSend = str(json.dumps(self.finalDataPackage))
+                self.msgHandler.send_message(mto=self.qMessage['from'], mbody=msgToSend, msubject='RequestedData')
+                
+                ''' Time to die! '''
+                self.amIDone = True
+                pass
+        else:
+            print 'Got unrecognized message for queryNo: ' + str(self.queryNo) + '. Message subject: ' + str(msg['subject'])
             
-            pass
             
     ''' This is the method that runs on starting this thread. 
     EDIT - It is now more of an event loop, listening for more messages and stuff to do for this query
@@ -92,18 +144,24 @@ class QueryProcessor(threading.Thread):
             ''' Start a timer to check for enough providers after timeout! '''
             threading.Timer(PROVIDER_REQUEST_TIMEOUT, self.putProviderRequestTimeoutOnThread).start()
             print 'Providers flooded and timeout set. queryNo: ' + self.queryNo
+            self.finalDataPackage['sensorType'] = str(self.queryObject['dataReqd'])
+            self.finalDataPackage['queryNo'] = self.queryNo
         else:
             print 'Could not satisfy query no: ' + str(self.queryNo) + '! Aborting...'
             self.amIDone = True
             return 
         
         ''' we have flooded providers now. Should start listening for messages! '''
+       
+        
         while (self.amIDone==False):
             try:
                 function, args, kwargs = self.q.get(timeout=self.timeout)
                 function(*args, **kwargs)
             except Queue.Empty:
                 pass
+            
+        print 'Thread for queryNo: ' + str(self.queryNo) + ' now dying...'
     
     def sendProviderConfirmation(self, user, confirmed):
         if(confirmed):
@@ -174,6 +232,7 @@ class QueryProcessor(threading.Thread):
             q.countReceived = 0
             
             q.save()    
+            self.queryDBObject = q
                    
             if(self.queryPossible()):
                 self.sendAcknowledgement(True)
