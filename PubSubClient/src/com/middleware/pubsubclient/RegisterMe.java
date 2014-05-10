@@ -63,7 +63,7 @@ public class RegisterMe extends Activity
 		public static JSONObject obj;
 		Intent intentAcc;
 		Intent intentAR;
-		Intent intentRequestListener;
+		public static Intent intentRequestListener;
 		Intent intentPublishQuery;
 
 		File file;
@@ -187,6 +187,38 @@ public class RegisterMe extends Activity
 								e.printStackTrace();
 							}
 
+					}
+
+				JSONArray array = new JSONArray();
+				try
+					{
+						array.put("Microphone");
+						array.put(0);
+						array.put(0);
+						array.put(0);
+						array.put(0);
+						obj.put("sensor" + (count++), array);
+					}
+				catch (JSONException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				JSONArray array2 = new JSONArray();
+				try
+					{
+						array2.put("GPS");
+						array2.put(0);
+						array2.put(0);
+						array2.put(0);
+						array2.put(0);
+						obj.put("sensor" + (count++), array2);
+					}
+				catch (JSONException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 
 				System.out.println("Checking for play services");
@@ -490,7 +522,7 @@ public class RegisterMe extends Activity
 				return false;
 			}
 
-		public String findType(int i)
+		public static String findType(int i)
 			{
 				switch (i)
 					{

@@ -1,7 +1,5 @@
 package com.middleware.pubsubclient;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.PacketCollector;
@@ -15,16 +13,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
 
 public class RequestListener extends Service
 	{
@@ -33,7 +28,7 @@ public class RequestListener extends Service
 		PacketFilter filter = null;
 		PacketListener listener = null;
 		PacketCollector collector = null;
-
+		static String servingQuery;
 		HashMap<String, JSONObject> dataRequests = new HashMap<String, JSONObject>();
 
 		public static boolean running = false;
@@ -119,32 +114,30 @@ public class RequestListener extends Service
 					{
 						System.out.println(message.getBody());
 						final JSONObject confirmation = new JSONObject();
-						String startTime;
-						String endTime;
+						// String startTime;
+						// String endTime;
 						final String queryNo;
-						String sensor, frequency, activity;
+						// String sensor, frequency, activity;
 						String request = message.getBody();
-						// try {
+						// // try {
 						final JSONObject o = new JSONObject(request);
-						startTime = o.getString("fromTime");
-						endTime = o.getString("toTime");
+						// startTime = o.getString("fromTime");
+						// endTime = o.getString("toTime");
 						queryNo = o.getString("queryNo");
-						sensor = o.getString("sensorType"); // needs to be
-															// parsed for
-															// multiple sensor
-															// types
-						frequency = o.getString("frequency");
-						activity = o.getString("Activity");
-						Date start = new Date(Long.parseLong(startTime) * 1000);
-						Date end = new Date(Long.parseLong(endTime) * 1000);
+						// sensor = o.getString("sensorType");
+						// frequency = o.getString("frequency");
+						// activity = o.getString("Activity");
+						// Date start = new Date(Long.parseLong(startTime) *
+						// 1000);
+						// Date end = new Date(Long.parseLong(endTime) * 1000);
 
 						final Message requestAck = new Message("server@103.25.231.23",
 								Message.Type.chat);
 						requestAck.setSubject("ProviderResponse");
-						SimpleDateFormat format = new SimpleDateFormat(
-								"dd/MM/yyyy HH:mm:ss");
-						String formattedStart = format.format(start);
-						String formattedEnd = format.format(end);
+						// SimpleDateFormat format = new SimpleDateFormat(
+						// "dd/MM/yyyy HH:mm:ss");
+						// String formattedStart = format.format(start);
+						// String formattedEnd = format.format(end);
 
 						/*
 						 * AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -330,104 +323,96 @@ public class RequestListener extends Service
 						if (finalStatus.equals("Confirmed")
 								&& dataRequests.containsKey(queryNo))
 							{
+								servingQuery = queryNo;
 								System.out
 										.println("Query no: "
 												+ queryNo
 												+ ". You decided to serve, got selected by the server. Now provide the data :)");
+								scheduleDataCollection(queryNo);
 							}
 
-						scheduleDataCollection(queryNo);
+						/*		String messageBody1 = message.getBody();
+									try
+										{
+											final JSONObject o = new JSONObject(messageBody1);
+											// {“queryNo”: “23121312312”, “finalStatus”:
+											// “Confirmed”} -- collect data in this case
+											boolean collectionStatus = o.getString("finalStatus")
+													.equals("Confirmed");
+											if (collectionStatus)
+												{
+													AlertDialog.Builder builder = new AlertDialog.Builder(
+															this);
+													builder.setTitle("Thank you");
+													builder.setIcon(R.drawable.ic_launcher);
+													builder.setMessage("Thank you for your cooperation. Data will be collected in the background.");
+													builder.setPositiveButton("OK",
+															new DialogInterface.OnClickListener()
+																{
+																	@Override
+																	public void onClick(
+																			DialogInterface dialog,
+																			int whichButton)
+																		{
 
-						String messageBody1 = message.getBody();
-						try
-							{
-								final JSONObject o = new JSONObject(messageBody1);
-								// {“queryNo”: “23121312312”, “finalStatus”:
-								// “Confirmed”} -- collect data in this case
-								boolean collectionStatus = o.getString("finalStatus")
-										.equals("Confirmed");
-								if (collectionStatus)
-									{
-										AlertDialog.Builder builder = new AlertDialog.Builder(
-												this);
-										builder.setTitle("Thank you");
-										builder.setIcon(R.drawable.ic_launcher);
-										builder.setMessage("Thank you for your cooperation. Data will be collected in the background.");
-										builder.setPositiveButton("OK",
-												new DialogInterface.OnClickListener()
-													{
-														@Override
-														public void onClick(
-																DialogInterface dialog,
-																int whichButton)
-															{
+																			try
+																				{
+																					scheduleDataCollection(o
+																							.getString("queryNo"));
+																				}
+																			catch (JSONException e)
+																				{
+																					// TODO
+																					// Auto-generated
+																					// catch
+																					// block
+																					e.printStackTrace();
+																				}
 
-																try
-																	{
-																		scheduleDataCollection(o
-																				.getString("queryNo"));
-																	}
-																catch (JSONException e)
-																	{
-																		// TODO
-																		// Auto-generated
-																		// catch
-																		// block
-																		e.printStackTrace();
-																	}
+																			dialog.dismiss();
+																		}
+																});
+													builder.setNegativeButton("Cancel",
+															new DialogInterface.OnClickListener()
+																{
+																	@Override
+																	public void onClick(
+																			DialogInterface dialog,
+																			int whichButton)
+																		{
+																			dialog.dismiss();
+																		}
+																});
 
-																dialog.dismiss();
-															}
-													});
-										builder.setNegativeButton("Cancel",
-												new DialogInterface.OnClickListener()
-													{
-														@Override
-														public void onClick(
-																DialogInterface dialog,
-																int whichButton)
-															{
-																dialog.dismiss();
-															}
-													});
-										// AlertDialog alert = builder.create();
-										// alert.getWindow().setType(
-										// WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-										// alert.show();
-									}
-								// {“queryNo”: “23121312312”, “finalStatus”:
-								// “Rejected”, "errorMessage":
-								// "Already got the required providers! :)"}
-								else
-									{
-										AlertDialog.Builder builder = new AlertDialog.Builder(
-												this);
-										builder.setTitle("Thank you");
-										builder.setIcon(R.drawable.ic_launcher);
-										builder.setMessage("Thank you for your cooperation. "
-												+ o.getString("errorMessage"));
-										builder.setPositiveButton("OK",
-												new DialogInterface.OnClickListener()
-													{
-														@Override
-														public void onClick(
-																DialogInterface dialog,
-																int whichButton)
-															{
-																dialog.dismiss();
-															}
-													});
-										// AlertDialog alert = builder.create();
-										// alert.getWindow().setType(
-										// WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-										// alert.show();
-									}
-							}
-						catch (JSONException e)
-							{
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+												}
+
+											else
+												{
+													AlertDialog.Builder builder = new AlertDialog.Builder(
+															this);
+													builder.setTitle("Thank you");
+													builder.setIcon(R.drawable.ic_launcher);
+													builder.setMessage("Thank you for your cooperation. "
+															+ o.getString("errorMessage"));
+													builder.setPositiveButton("OK",
+															new DialogInterface.OnClickListener()
+																{
+																	@Override
+																	public void onClick(
+																			DialogInterface dialog,
+																			int whichButton)
+																		{
+																			dialog.dismiss();
+																		}
+																});
+
+												}
+										}
+									catch (JSONException e)
+										{
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}*/
 
 					}
 
@@ -445,8 +430,8 @@ public class RequestListener extends Service
 								System.out.println("Sorry. Not enough capable users.");
 								Intent iQP = new Intent("buildAlert");
 								iQP.putExtra("toShow", "Sorry, not enough capable users");
-								LocalBroadcastManager.getInstance(this)
-										.sendBroadcast(iQP);
+								// LocalBroadcastManager.getInstance(this)
+								// .sendBroadcast(iQP);
 							}
 
 						else
@@ -454,26 +439,46 @@ public class RequestListener extends Service
 								System.out.println("Enough capable users. :)");
 								Intent iQP = new Intent("buildAlert");
 								iQP.putExtra("toShow", "Enough capable users. :)");
-								LocalBroadcastManager.getInstance(this)
-										.sendBroadcast(iQP);
+								// LocalBroadcastManager.getInstance(this)
+								// .sendBroadcast(iQP);
 							}
 
+					}
+
+				else if (message.getSubject().equals("RequestedData"))
+					{
+						String data = message.getBody();
+						JSONObject JSONdata = new JSONObject(data);
+						String sensor = JSONdata.getString("sensorType");
+						if (sensor.equalsIgnoreCase("Accelerometer")
+								|| sensor.equalsIgnoreCase("GPS"))
+							{
+								ConvertCSVToFile.convert(message);
+							}
+						if (sensor.equalsIgnoreCase("Microphone"))
+							{
+								ConvertAudioToFile.convert(message);
+							}
 					}
 			}
 
 		void scheduleDataCollection(String queryNo) throws JSONException
 			{
 				JSONObject messageBody = dataRequests.get(queryNo);
-				// String sensors = messageBody.getString("sensorType");
-				// String frequency = messageBody.getString("frequency");
-				// String activity = messageBody.getString(activity");
+				String sensors = messageBody.getString("sensorType");
+				String frequency = messageBody.getString("frequency");
+				// String activity = messageBody.getString("activity");
 				String fromTime = messageBody.getString("fromTime");
 				String endTime = messageBody.getString("toTime");
 
 				System.out.println("Query No: " + queryNo + ", Start Time: " + fromTime
-						+ ", End Time: " + endTime);
+						+ ", End Time: " + endTime + ", Sensors: " + sensors
+						+ ", Frequency: " + frequency);
 				Intent intent = new Intent("dataRequest");
 				intent.putExtra("whatToDo", "start");
+				intent.putExtra("sensorName", sensors);
+				intent.putExtra("frequency", frequency);
+
 				PendingIntent pendingIntent = PendingIntent.getBroadcast(
 						this.getApplicationContext(), 1234, intent, 0);
 				// AlarmManager alarmManager = (AlarmManager)
@@ -489,6 +494,8 @@ public class RequestListener extends Service
 
 				Intent intent2 = new Intent("dataStopRequest");
 				intent2.putExtra("whatToDo", "stop");
+				intent2.putExtra("sensorName", sensors);
+				intent2.putExtra("frequency", frequency);
 				PendingIntent pendingIntent2 = PendingIntent.getBroadcast(
 						this.getApplicationContext(), 9876, intent2, 0);
 				// AlarmManager alarmManager2 = (AlarmManager)

@@ -35,19 +35,44 @@ public class AlarmReceiver extends BroadcastReceiver
 				Vibrator vibrator = (Vibrator) context
 						.getSystemService(Context.VIBRATOR_SERVICE);
 				vibrator.vibrate(2000);
-
-				Intent i = new Intent(context, AccReadings.class);
+				String sensorName = intent.getExtras().getString("sensorName");
+				Intent i = returnRelevantIntent(context, sensorName);
 				if (intent.getExtras().get("whatToDo").equals("start"))
 					{
-						System.out.println("Starting accReadings");
+						System.out.println("Starting service for " + sensorName);
 						context.startService(i);
 					}
 
 				if (intent.getExtras().get("whatToDo").equals("stop"))
 					{
-						System.out.println("Stoping accReadings");
+						System.out.println("Stoping service for " + sensorName);
 						context.stopService(i);
 					}
 
+			}
+
+		public Intent returnRelevantIntent(Context context, String sensorName)
+			{
+				Intent i = null;
+				System.out.println("Finding relevant intent");
+				System.out.println("Sensor name = " + sensorName);
+
+				if (sensorName.equalsIgnoreCase("accelerometer"))
+					{
+						i = new Intent(context, AccReadings.class);
+					}
+
+				else if (sensorName.equalsIgnoreCase("gps"))
+					{
+						i = new Intent(context, GPSReadings.class);
+					}
+
+				else if (sensorName.equalsIgnoreCase("microphone"))
+					{
+						System.out.println("microphone matched");
+						i = new Intent(context, MicReadings.class);
+					}
+
+				return i;
 			}
 	}

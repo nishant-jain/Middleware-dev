@@ -208,7 +208,7 @@
         <CheckBox
             android:id="@+id/CheckBox02"
             android:layout_gravity="left"
-            android:text="@string/rot"
+            android:text="Microphone"
             android:textSize="13sp" />
 
         <CheckBox
