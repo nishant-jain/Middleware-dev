@@ -21,7 +21,7 @@ class RegistrationProcessor(threading.Thread):
         ''' Check if the message is registration or deregistration '''
         #print "Running Registration Processor!"
         #print str(self.rMessage['subject'])
-        if str(self.rMessage['subject'])  in ('Sensor Capabilities'): #preliminary Check, might change later
+        if str(self.rMessage['subject'])  in ('Sensor Capabilities', 'updateSubscription'): #preliminary Check, might change later
             #print "Matched Register!"
             self.msgObject = json.loads(self.rMessage['body'])
             self.registerUser(self.msgObject, str(self.rMessage['from']).split("@")[0])
@@ -48,9 +48,30 @@ class RegistrationProcessor(threading.Thread):
                 download = True
             else:
                 download = False
-            u = User(username=str(userName), RegistrationDate=datetime.datetime.now(), ActivityRecognition=activity, DownloadAllowed=download)
+            if 'Location' in msgObject:
+                lAr = msgObject['Location']
+                location = str(lAr[0])
+                latitude = str(lAr[1])
+                longitude = str(lAr[2])
+            else:
+                location = 'Hardcoded'
+                latitude = 0.0
+                longitude = 0.0
+            u = User(username=str(userName), RegistrationDate=datetime.datetime.now(), ActivityRecognition=activity, DownloadAllowed=download, Location=location, Latitude=latitude, Longitude=longitude)
             u.save()
         #print "User Saved"
+        
+        '''Update location anyways, if the key is present '''
+        if 'Location' in msgObject:
+            lAr = msgObject['Location']
+            location = str(lAr[0])
+            latitude = str(lAr[1])
+            longitude = str(lAr[2])
+            u.Longitude = longitude
+            u.Latitude = latitude
+            u.Location = location
+            u.save()
+                
         
         if foundFlag:
             #User already exists. Should handle it differently.
