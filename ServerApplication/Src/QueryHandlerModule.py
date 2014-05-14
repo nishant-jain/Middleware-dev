@@ -296,19 +296,19 @@ class QueryProcessor(threading.Thread):
 
 def queryparse(msgHandler, msg): #parse queries
     #print msg['body']
-	print 'Got query'
-	qno = str(json.loads(msg['body'])['queryNo'])
-	print 'Got message from query number: ' + qno
-	for i in threading.enumerate():
-		if i.name==qno:
-			print 'Found a thread already for query number: ' + qno
-			i.onThread(QueryProcessor.processMessage, i, msg)
-			return
-	'''TODO :need to check for msgs related to threads/queries which have been already terminated'''
-	#else, if no current object found, create a new one!
-	print "Creating new Query thread."
-	processor = QueryProcessor(msgHandler, msg)
-	processor.name = qno
-	processor.start()
+    print 'Got query'
+    qno = str(json.loads(msg['body'])['queryNo'])
+    print 'Got message from query number: ' + qno
+    for i in threading.enumerate():
+        if i.name==qno:
+            print 'Found a thread already for query number: ' + qno
+            i.onThread(QueryProcessor.processMessage, i, msg)
+            return
+    '''TODO :need to check for msgs related to threads/queries which have been already terminated'''
+    #else, if no current object found, create a new one!
+    print "Creating new Query thread."
+    processor = QueryProcessor(msgHandler, msg)
+    processor.name = qno
+    processor.start()
 
 
