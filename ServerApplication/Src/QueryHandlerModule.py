@@ -10,6 +10,8 @@ from Models import Query
 from Models import SensorUserRel,Sensor,User
 import Queue
 import datetime
+from math import radians, cos, sin, asin, sqrt
+
 
 '''Constants!'''
 PROVIDER_REQUEST_TIMEOUT = 60.0 #60 seconds!
@@ -31,7 +33,27 @@ class QueryProcessor(threading.Thread):
         self.hostName = str(self.qMessage['from']).split("@")[1]
         self.waiting = False
         self.receivedCount = 0
+        self.providerList = []
         
+        
+
+    def getDistanceInKM(self, lon1, lat1, lon2, lat2):
+        """
+        Calculate the great circle distance between two points 
+        on the earth (specified in decimal degrees)
+        """
+        # convert decimal degrees to radians 
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    
+        # haversine formula 
+        dlon = lon2 - lon1 
+        dlat = lat2 - lat1 
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a)) 
+    
+        # 6367 km is the radius of the Earth
+        km = 6367 * c
+        return km     
     
     def onThread(self, function, *args, **kwargs):
         self.q.put((function, args, kwargs))
@@ -182,9 +204,9 @@ class QueryProcessor(threading.Thread):
         return
     
     def floodProviders(self):
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
-        z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
-        ''' Now z has all the users we have to send a request to! '''
+        #u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
+        #z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
+        #''' Now z has all the users we have to send a request to! '''
         
         toSend = '{"queryNo":"' + str(self.queryNo) + '","sensorType":"' + str(self.queryObject['dataReqd']) + '","frequency":"' + str(self.queryObject['frequency']) + '",'
         toSend = toSend + '"Activity":"' + str(self.queryObject['activity']) + '", "fromTime":"' + str(self.queryObject['fromTime']) + '", "toTime":"' + str(self.queryObject['toTime']) + '"}'
@@ -192,7 +214,7 @@ class QueryProcessor(threading.Thread):
         #self.msgHandler.send_message(self.qMessage['from'], toSend)
         serverAppend = '@' + self.hostName
         
-        for i in z:
+        for i in self.providerList:
             self.msgHandler.send_message(mto=(str(i.username) + serverAppend), mbody=toSend, msubject="DataRequest")
 
         ''' Query requests sent out; should now start listening for replies! '''
@@ -219,17 +241,33 @@ class QueryProcessor(threading.Thread):
             q.username = uname
             q.queryNo = str(qObj['queryNo'])
             q.dataReqd = str(qObj['dataReqd'])
-            q.frequency = eval(str(qObj['frequency']))
-            q.Latitude = eval(str(qObj['latitude']))
-            q.Longitude = eval(str(qObj['longitude']))
+            if 'frequency' in qObj:
+                q.frequency = eval(str(qObj['frequency']))
+            else:
+                q.frequency = 0
+            if 'latitude' in qObj:
+                q.Latitude = eval(str(qObj['latitude']))
+            else:
+                q.Latitude = -1.0
+            if 'longitude' in qObj:
+                q.Longitude = eval(str(qObj['longitude']))
+            else:
+                q.Longitude = -1.0
             q.fromTime = datetime.datetime.fromtimestamp(eval(str(qObj['fromTime']))/1000)
             q.toTime = datetime.datetime.fromtimestamp(eval(str(qObj['toTime']))/1000)
             q.expiryTime = datetime.datetime.fromtimestamp(eval(str(qObj['expiryTime']))/1000)
             q.Location = 'hardcoded'#str(qObj['location'])
-            q.Activity = str(qObj['activity'])
+            if 'activity' in qObj:
+                q.Activity = str(qObj['activity'])
+            else:
+                q.Activity = "Don't Care"
             q.countMin = eval(str(qObj['countMin']))
             q.countMax = eval(str(qObj['countMax']))
             q.countReceived = 0
+            if 'radius' in qObj:
+                q.Radius = eval(str(qObj['radius']))
+            else:
+                q.Radius = -1
             
             q.save()    
             self.queryDBObject = q
@@ -247,19 +285,30 @@ class QueryProcessor(threading.Thread):
         #To Write a SELECT query when DB Schema finalized.
         #assuming no future queries for now
         #Untested code
-        u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
-        count=0
-        for p in u:
-                count=count+p.users.count()
-        #count=User.select().join(Sensor).join(SensorUserRel).where(SensorUserRel.user == SensorUserRel.sensor).count()
-        
+        if self.queryDBObject.frequency==0:
+            u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)).distinct()
+        else:
+            u=Sensor.select().where((str(self.queryObject['dataReqd'])== Sensor.SensorType)&((Sensor.minDelay==0)|(eval(str(self.queryObject['frequency']))<1000000.0/Sensor.minDelay)) ).distinct()
+        z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
+
         ''' Possible query to get all users of such sensors in u:
          z = User.select().join(SensorUserRel).where(SensorUserRel.sensor << u).distinct()
          '''
+        lat1 = self.queryDBObject.Latitude
+        lon1 = self.queryDBObject.Longitude
+        if self.queryDBObject.Radius<0 or lat1<0 or lon1<0:
+            ''' Radius to not be considered! '''
+            for i in z:
+                self.providerList += [i]
+        else:
+            R = self.queryDBObject.Radius
+            for i in z:
+                if self.getDistanceInKM(lon1, lat1, i.Longitude, i.Latitude) <= R:
+                    self.providerList += [i]
             
-        print 'Found count=' + str(count) + ' for query Number: ' + self.queryNo
+        print 'Found count=' + len(self.providerList) + ' for query Number: ' + self.queryNo
         
-        if(count>=eval(str(self.queryObject['countMin']))):
+        if(len(self.providerList)>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
             return True
         else:

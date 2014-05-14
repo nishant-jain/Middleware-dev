@@ -36,6 +36,9 @@ class User(baseDBModel):
     RegistrationDate = DateTimeField()
     ActivityRecognition = BooleanField(index=True)
     DownloadAllowed = BooleanField(index=True)
+    Latitude = DoubleField()
+    Longitude = DoubleField()
+    Location = TextField()
     
 class SensorUserRel(baseDBModel):
     user = ForeignKeyField(User, related_name="sensors")
@@ -60,6 +63,7 @@ class Query(baseDBModel):
     countMin= IntegerField()
     countMax= IntegerField()
     countReceived = IntegerField()
+    Radius = DoubleField()
     
     class Meta:
         indexes = (
