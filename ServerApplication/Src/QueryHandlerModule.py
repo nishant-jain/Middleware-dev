@@ -306,7 +306,7 @@ class QueryProcessor(threading.Thread):
                 if self.getDistanceInKM(lon1, lat1, i.Longitude, i.Latitude) <= R:
                     self.providerList += [i]
             
-        print 'Found count=' + len(self.providerList) + ' for query Number: ' + self.queryNo
+        print 'Found count=' + str(len(self.providerList)) + ' for query Number: ' + self.queryNo
         
         if(len(self.providerList)>=eval(str(self.queryObject['countMin']))):
             #Query is possible; initiate messages to valid subscribers to respond with an acknowledgement.            
