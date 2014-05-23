@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.middleware.pubsubclient"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="18" />
+	
+	
+	 <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+   <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+   <uses-permission android:name="android.permission.INTERNET" />
+   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+   <uses-permission android:name="android.permission.WAKE_LOCK" />
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+<uses-permission android:name="android.permission.VIBRATE" />
+<uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+ 
+ <uses-feature android:name="android.hardware.location" android:required="true" />
+ <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+	
+	
+    <application
+        android:allowBackup="true"
+     
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+         <!--  <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>  -->
+          
+        <activity
+            android:name="com.middleware.pubsubclient.RegisterDevice"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.middleware.pubsubclient.RequestData"
+            android:icon="@drawable/publish"
+            android:label="@string/publish" >
+        </activity>
+        <activity
+            android:name="com.middleware.pubsubclient.UpdateAllowedTopics"
+            android:label="Subscription Settings" >
+        </activity>
+        <activity
+            android:name="com.middleware.pubsubclient.Settings"
+            android:label="Account Settings" >
+        </activity>
+        <activity android:name="com.google.android.gms" />
+        <service
+            android:name = ".AccReadings">
+        </service>
+        
+        <service android:name="com.middleware.pubsubclient.GPSReadings"></service>
+        <service android:name="com.middleware.pubsubclient.MicReadings"></service>
+        <service android:name = "com.middleware.pubsubclient.RequestListener"></service>
+        <service android:name="com.middleware.pubsubclient.RequestListener"></service>
+        <service android:name="com.middleware.pubsubclient.ActivityRecognitionCallingService"></service>
+        <service android:name="com.middleware.pubsubclient.ActivityRecognitionService"></service>
+        <!--   <receiver android:name="com.middleware.pubsubclient.AlarmReceiver" ></receiver>-->
+    </application>
+
+</manifest>

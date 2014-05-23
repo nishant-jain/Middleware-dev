@@ -1,6 +1,7 @@
 package com.middleware.pubsubclient;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -38,6 +43,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -65,7 +71,12 @@ public class RegisterMe extends Activity
 		Intent intentAR;
 		public static Intent intentRequestListener;
 		Intent intentPublishQuery;
-
+		
+		//*****************************
+		Double latitude,longitude;
+		//*****************************
+		 
+		
 		File file;
 		AlarmReceiver alarmReceiver;
 		AlarmReceiverStop alarmReceiverStop;
@@ -79,9 +90,12 @@ public class RegisterMe extends Activity
 		Button stopListeningtoRequests;
 		Button startListeningtoRequests;
 		Button publishQueryButton;
-
+		LocationListener gpsListener;
+		JSONArray array3;
 		Button upload;
-
+		LocationManager locationManager;
+		String provider;
+		
 		@SuppressLint("ShowToast")
 		@Override
 		protected void onCreate(Bundle savedInstanceState)
@@ -90,8 +104,13 @@ public class RegisterMe extends Activity
 				setContentView(R.layout.activity_register_me);
 
 				upload = (Button) findViewById(R.id.button5);
-				upload.setOnClickListener(startUploading);
-
+				//upload.setOnClickListener(startUploading);
+				
+				//locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+				//provider=locationManager.GPS_PROVIDER;
+				//Location location = locationManager.getLastKnownLocation(provider);
+				//locationManager.requestLocationUpdates(provider, 0, 100, gpsListener);
+				
 				startRecording = (Button) findViewById(R.id.button2);
 				stopRecording = (Button) findViewById(R.id.button3);
 				startRecording.setOnClickListener(startDataRecording);
@@ -166,6 +185,59 @@ public class RegisterMe extends Activity
 						e.printStackTrace();
 
 					}
+				
+				//*********************************************************
+				gpsListener=new LocationListener() {
+
+					@Override
+					public void onStatusChanged(String provider, int status, Bundle extras) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onProviderEnabled(String provider) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onProviderDisabled(String provider) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onLocationChanged(Location location) {
+						// TODO Auto-generated method stub
+						Double latitude=location.getLatitude();
+						Double longitude=location.getLongitude();
+						array3= new JSONArray();
+						try
+							{
+								array3.put("Location");
+								array3.put(latitude);
+								array3.put(longitude);
+								array3.put(0);
+								array3.put(0);
+								obj.put("Location" , array3);
+							}
+						catch (JSONException e)
+							{
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						loginWithServer = new Message(
+								"server@103.25.231.23",
+								Message.Type.normal);
+						loginWithServer.setSubject("Sensor Capabilities");
+						loginWithServer.setBody(obj.toString());
+						conn.sendPacket(loginWithServer); 
+						Toast.makeText(getApplicationContext(), "Location Updated", Toast.LENGTH_SHORT).show();
+					}
+				};
+				//**********************************************************
+				
 
 				obj = new JSONObject();
 				int count = 1;
@@ -220,6 +292,24 @@ public class RegisterMe extends Activity
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				
+				//*******************************************
+				array3= new JSONArray();
+				try
+					{
+						array3.put("Location");
+						array3.put(latitude);
+						array3.put(longitude);
+						array3.put(0);
+						array3.put(0);
+						obj.put("Location" , array3);
+					}
+				catch (JSONException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				//********************************************
 
 				System.out.println("Checking for play services");
 				int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
@@ -273,7 +363,7 @@ public class RegisterMe extends Activity
 
 				try
 					{
-						obj.put("noSensors", obj.length() - 2);
+						obj.put("noSensors", obj.length() - 3);
 					}
 				catch (JSONException e)
 					{
@@ -363,16 +453,17 @@ public class RegisterMe extends Activity
 					}
 			};
 
-		OnClickListener startUploading = new OnClickListener()
-			{
-
-				@Override
-				public void onClick(View v)
-					{
-						// TODO Auto-generated method stub
-						UploadFile.upload(file, RegisterMe.this.getApplicationContext());
-					}
-			};
+//		OnClickListener startUploading = new OnClickListener()
+//			{
+//
+//				@Override
+//				public void onClick(View v)
+//					{
+//						// TODO Auto-generated method stub
+//						UploadFile.upload(file, RegisterMe.this.getApplicationContext());
+//					}
+//			};
+			
 		OnClickListener startDataRecording = new OnClickListener()
 			{
 				@Override
@@ -448,7 +539,7 @@ public class RegisterMe extends Activity
 										.setMessage("connected to the server").create()
 										.show();
 								startService(intentRequestListener);
-
+								
 							}
 						catch (XMPPException e)
 							{
@@ -472,7 +563,7 @@ public class RegisterMe extends Activity
 		protected void onDestroy()
 			{
 				super.onDestroy();
-				conn.disconnect();
+			conn.disconnect();
 				System.out.println("Connection terminated");
 			}
 
@@ -585,31 +676,20 @@ public class RegisterMe extends Activity
 									{
 										username = chkInstall.getString("username", null);
 										password = chkInstall.getString("password", null);
-										am.createAccount(username, password); // creates
-																				// an
-																				// account
-																				// with
-																				// the
-																				// XMPP
-																				// server
+										am.createAccount(username, password); 
 										loginToServer();
-
+										LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+										//String provider=locationManager.GPS_PROVIDER;
+										//Location location = locationManager.getLastKnownLocation(provider);
+										locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 50, gpsListener);
+										locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER, 0, 50, gpsListener);
+										locationManager.requestLocationUpdates(locationManager.PASSIVE_PROVIDER, 0, 50, gpsListener);
 										loginWithServer = new Message(
 												"server@103.25.231.23",
 												Message.Type.normal);
 										loginWithServer.setSubject("Sensor Capabilities");
 										loginWithServer.setBody(obj.toString());
-										conn.sendPacket(loginWithServer); // sends
-																			// a
-																			// normal
-																			// message
-																			// to
-																			// the
-																			// customServer
-																			// containing
-																			// the
-																			// sensor
-																			// capabilities
+										conn.sendPacket(loginWithServer); 
 
 										showDialog
 												.setMessage(
@@ -668,14 +748,9 @@ public class RegisterMe extends Activity
 				String UNIQUE_ID;
 				TelephonyManager mngr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 				UNIQUE_ID = mngr.getDeviceId();
-				// userName=UNIQUE_ID.concat("@serverName");
 				userName = UNIQUE_ID;
 				editPrefs.putString("username", userName).commit();
-				// System.out.println(UNIQUE_ID);
 				editPrefs.putString("password", UNIQUE_ID).commit();
-				// System.out.println("username created: "+userName);
-				// System.out.println("password is: "+UNIQUE_ID);
-				// System.out.println("Proceeding to registeration");
 				showDialog.setTitle("Installating app...").setMessage(
 						"Username and password created");
 

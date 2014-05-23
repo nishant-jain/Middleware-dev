@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+       
+        <PreferenceCategory title="@string/acc_settings" >
+           
+            <com.middleware.pubsubclient.DeletePreference
+                            android:key="deleteAccount"
+           					android:dialogIcon="@android:drawable/ic_dialog_alert"
+            				android:title="Delete Account"
+            				android:summary="Deletes your XMPP account"
+            				android:dialogMessage="Are you sure you wish to delete your account?"
+            				android:positiveButtonText="Yes"
+            				android:negativeButtonText="No"/>
+            
+        </PreferenceCategory>
+        
+    </PreferenceScreen>

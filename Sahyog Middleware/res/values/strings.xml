@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="go_to_publish_query">Publish New Query</string>
+    <string name="app_name">PubSubClient</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_register_client">RegisterClient</string>
+    <string name="sensors">Sensor Data Required:</string>
+    <string name="from">From:</string>
+    <string name="to">To:</string>
+    <string name="expiry">Before:</string>
+    <string name="loc">Location:</string>
+    <string name="rad">Radius:</string>
+    <string name="count">Device Count</string>
+    <string name="publish">Publish Query</string>
+    <string name="acc">Accelerometer</string>
+    <string name="gyro">Gyroscope</string>
+    <string name="gps">GPS</string>
+    <string name="uploadFile">Upload File</string>
+    <string name="rot">Rotation Vector</string>
+    <string name="subscribe">Update Subscription</string>
+    <string name="pref_user_profile">Subscription Topics</string>
+    <string name="startRecording">Start recording data</string>
+    <string name="stopRecording">Stop recording data</string>
+    <string-array name="activity_options">
+        <item>Don\'t Care</item>
+        <item>On Foot</item>
+        <item>In Vehicle</item>
+        <item>On Bicycle</item>
+    </string-array>
+    <string-array name="frequency_options">
+        <item>Normal</item>
+        <item>UI</item>
+        <item>Fastest</item>
+        <item>Game</item>
+    </string-array>
+     <string-array name="device_count">
+        <item>Range</item>
+        <item>Exact</item>
+     
+    </string-array>
+     <string name="acc_settings">Account Settings</string>
+
+</resources>
