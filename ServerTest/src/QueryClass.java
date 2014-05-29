@@ -76,10 +76,11 @@ public class QueryClass extends Thread implements MessageListener{
 	        } 
     	 });
      if(username.equals("user1")){
-     Message loginWithServer=new Message("server@103.25.231.23",Message.Type.chat);
+    	Message loginWithServer=new Message("server@103.25.231.23",Message.Type.chat);
 		loginWithServer.setSubject("Query");
 		loginWithServer.setBody(query.toString());
-		connection.sendPacket(loginWithServer);}
+		connection.sendPacket(loginWithServer);
+		}
 	}
     
     public void run(){

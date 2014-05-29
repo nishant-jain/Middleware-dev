@@ -10,6 +10,7 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
+import org.jivesoftware.smack.SASLAuthentication;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
@@ -27,6 +28,8 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     private String username;
     private String password;
     private long time;
+    private static long totalTime = 0;
+    private static long totalCount = 0;
     
     JabberSmackAPI(String username,String password){
     	this.username=username;
@@ -34,16 +37,19 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     	System.out.println("Connecting with"+username);
     }
     
-    public void login(String userName, String password) throws XMPPException
+    public void login(String userName, String password) throws XMPPException, InterruptedException
     {
 	    ConnectionConfiguration config = new ConnectionConfiguration("103.25.231.23",5222);
 	    connection = new XMPPConnection(config);
+        //SASLAuthentication.supportSASLMechanism("PLAIN", 0);
+    	time=System.currentTimeMillis();
+
 	    connection.connect();
 	    am=connection.getAccountManager();
 		obj=new JSONObject();
 		int count=1;
 		JSONArray array=new JSONArray();
-		array.put("Accelerometer");
+		array.put("AccelerometerFake");
 		array.put("1234");
 		array.put("123");
 		array.put("27849032");
@@ -56,7 +62,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 		}
 		array=new JSONArray();
 	
-		array.put("Gyroscope");
+		array.put("GyroscopeFake");
 		array.put("1234");
 		array.put("123");
 		array.put("27849032");
@@ -76,6 +82,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		  if(am.supportsAccountCreation()){
 			    try{am.createAccount(userName, password); //to create accounts.Comment out if not needed.
 			    
@@ -86,18 +93,26 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 				loginWithServer.setBody(obj.toString());
 				connection.sendPacket(loginWithServer);
 		    }	
-		Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
+	Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
 			public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
 				//System.out.println("Received message: " + message); 
 				if(message.getSubject().toString().equalsIgnoreCase("Registration Successful!")){
-    	            //System.out.println("disconnected "+username);
+    	            System.out.println("disconnected "+username);
 
 				            connection.disconnect();
 				            time=System.currentTimeMillis()-time;
-				            System.out.println("time taken "+username+" "+time);
-		            	}} });
+				            totalTime += time;
+				            totalCount++;
+//				            connection.disconnect();
+				            System.out.println("TotalTime: " + totalTime + "\nTotalCount: " + totalCount + "\nAverage: " + ((totalTime*1.0)/totalCount));
+				            
+//				            System.out.println("time taken "+username+" "+time);
+		            	}
+				            } });
 		     
-		
+		while(connection.isConnected()){
+			Thread.sleep(50);
+		}	
 	  
 	    
 	 
@@ -105,9 +120,11 @@ public class JabberSmackAPI extends Thread implements MessageListener{
     }
     public void run(){
         try {
-        	time=System.currentTimeMillis();
 			login(username, password);
 		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -116,19 +133,7 @@ public class JabberSmackAPI extends Thread implements MessageListener{
 
     	
     }
-    public void start(){
-    	System.out.println("Starting " +  username );
-    	if (t == null)
-        {
-           t = new Thread (this, username);
-           
-           t.start ();
-        }
-    	
-    }
- 
-    
- 
+
     public void disconnect()
     {
     connection.disconnect();
@@ -146,9 +151,9 @@ public class JabberSmackAPI extends Thread implements MessageListener{
  
     	JabberSmackAPI T1;
     // turn on the enhanced debugger
-    XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<100;i++){
-    T1 = new JabberSmackAPI("user"+i,"1234");
+    XMPPConnection.DEBUG_ENABLED = false;
+    for(int i=0;i<200;i++){
+    T1 = new JabberSmackAPI("username"+i,"1234");
     T1.start();}
     
 
