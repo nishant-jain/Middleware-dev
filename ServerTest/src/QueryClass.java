@@ -47,7 +47,7 @@ public class QueryClass extends Thread implements MessageListener{
 	    Long dat = dt.getTime();
 	    JSONObject query = new JSONObject();
 		query.put("username", username);
-		query.put("queryNo", "98765");
+		query.put("queryNo", "666666");
 		query.put("dataReqd","AccelerometerFake");
 		query.put("fromTime", dat);
 		query.put("toTime", dat+100);
@@ -57,10 +57,10 @@ public class QueryClass extends Thread implements MessageListener{
 		query.put("latitude","1.0");
 		query.put("activity","Download" );
 		query.put("frequency",0);
-		query.put("countMin", 8);
+		query.put("countMin", 150);
 		query.put("countMax", 200);
 	    final JSONObject query2 = new JSONObject();
-	    query2.put("queryNo", "98765");
+	    query2.put("queryNo", "666666");
 	    query2.put("status", "Accepted");
 	   
 	    
@@ -71,21 +71,24 @@ public class QueryClass extends Thread implements MessageListener{
 				//System.out.println("Received message: " + message);
 
 			if(message.getSubject().toString().equalsIgnoreCase("DataRequest")){
-
+				 if(!username.equals("username1")){
+					 time = System.currentTimeMillis();
+				 
 				Message loginWithServer=new Message("server@103.25.231.23",Message.Type.chat);
 				loginWithServer.setSubject("ProviderResponse");
 				loginWithServer.setBody(query2.toString());
-				connection.sendPacket(loginWithServer);
+				connection.sendPacket(loginWithServer);}
 			}
 			else if (message.getSubject().toString().equalsIgnoreCase("Final Confirmation"))
-			{				System.out.println("Received message: " + message);
+			{		
+				
+				System.out.println("Received message: " + message);
 
 				connection.disconnect();
 				time=System.currentTimeMillis()-time;
 	            System.out.println("time taken "+username+" "+time);
 	            totalTime += time;
 	            totalCount++;
-	            connection.disconnect();
 	            System.out.println("\nTotalTime: " + totalTime + "\nTotalCount: " + totalCount + "\nAverage: " + ((totalTime*1.0)/totalCount));
 			}
 	        /*    System.out.println("disconnected "+username);
@@ -173,7 +176,7 @@ public class QueryClass extends Thread implements MessageListener{
    
     // turn on the enhanced debugger
     //XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<10 ;i++){
+    for(int i=0;i<100 ;i++){
     T1 = new QueryClass("username"+i,"1234");
     T1.start();}
    

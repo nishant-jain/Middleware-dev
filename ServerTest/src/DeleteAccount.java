@@ -115,7 +115,7 @@ public class DeleteAccount extends Thread implements MessageListener{
     // turn on the enhanced debugger
     XMPPConnection.DEBUG_ENABLED = false;
     ArrayList<DeleteAccount> Ar = new ArrayList<DeleteAccount>();
-    for(int i=5;i<10;i++){
+    for(int i=50;i<100;i++){
     T1 = new DeleteAccount("username"+i,"1234");
     Ar.add(T1);
     T1.start();}
