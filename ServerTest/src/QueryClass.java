@@ -47,7 +47,7 @@ public class QueryClass extends Thread implements MessageListener{
 	    Long dat = dt.getTime();
 	    JSONObject query = new JSONObject();
 		query.put("username", username);
-		query.put("queryNo", "116");
+		query.put("queryNo", "98765");
 		query.put("dataReqd","AccelerometerFake");
 		query.put("fromTime", dat);
 		query.put("toTime", dat+100);
@@ -57,10 +57,10 @@ public class QueryClass extends Thread implements MessageListener{
 		query.put("latitude","1.0");
 		query.put("activity","Download" );
 		query.put("frequency",0);
-		query.put("countMin", 10);
-		query.put("countMax", 20);
+		query.put("countMin", 8);
+		query.put("countMax", 200);
 	    final JSONObject query2 = new JSONObject();
-	    query2.put("queryNo", "116");
+	    query2.put("queryNo", "98765");
 	    query2.put("status", "Accepted");
 	   
 	    
@@ -68,7 +68,7 @@ public class QueryClass extends Thread implements MessageListener{
     	 public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
 			//time=System.currentTimeMillis()-time;
             //System.out.println("time taken "+username+" "+time);
-				System.out.println("Received message: " + message);
+				//System.out.println("Received message: " + message);
 
 			if(message.getSubject().toString().equalsIgnoreCase("DataRequest")){
 
@@ -173,7 +173,7 @@ public class QueryClass extends Thread implements MessageListener{
    
     // turn on the enhanced debugger
     //XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<50 ;i++){
+    for(int i=0;i<10 ;i++){
     T1 = new QueryClass("username"+i,"1234");
     T1.start();}
    
