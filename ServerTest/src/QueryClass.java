@@ -27,6 +27,8 @@ public class QueryClass extends Thread implements MessageListener{
     private String username;
     private String password;
     private long time;
+    private static long totalTime = 0;
+    private static long totalCount = 0;
     
     QueryClass(String username,String password){
     	this.username=username;
@@ -34,7 +36,7 @@ public class QueryClass extends Thread implements MessageListener{
     	System.out.println("Connecting with"+username);
     }
     
-    public void login(String userName, String password) throws XMPPException, JSONException
+    public void login(String userName, String password) throws XMPPException, JSONException, InterruptedException
     {
 	    ConnectionConfiguration config = new ConnectionConfiguration("103.25.231.23",5222);
 	    connection = new XMPPConnection(config);
@@ -45,26 +47,48 @@ public class QueryClass extends Thread implements MessageListener{
 	    Long dat = dt.getTime();
 	    JSONObject query = new JSONObject();
 		query.put("username", username);
-		query.put("queryNo", "4");
-		query.put("dataReqd","Accelerometer");
+		query.put("queryNo", "116");
+		query.put("dataReqd","AccelerometerFake");
 		query.put("fromTime", dat);
 		query.put("toTime", dat+100);
 		query.put("expiryTime", dat+1000);
 		query.put("location", "0.0");
 		query.put("longitude","1.0");
 		query.put("latitude","1.0");
-		query.put("Activity","Download" );
+		query.put("activity","Download" );
 		query.put("frequency",0);
 		query.put("countMin", 10);
 		query.put("countMax", 20);
-		
+	    final JSONObject query2 = new JSONObject();
+	    query2.put("queryNo", "116");
+	    query2.put("status", "Accepted");
+	   
+	    
      Chat chat = connection.getChatManager().createChat("server@103.25.231.23", new MessageListener() {
     	 public void processMessage(Chat chat, Message message) { // Print out any messages we get back to standard out.
-			System.out.println("Received message: " + message);
-			time=System.currentTimeMillis()-time;
-            System.out.println("time taken "+username+" "+time);
-			/*if(message.getSubject().toString().equalsIgnoreCase("De-Registration Successful!")){
-	            System.out.println("disconnected "+username);
+			//time=System.currentTimeMillis()-time;
+            //System.out.println("time taken "+username+" "+time);
+				System.out.println("Received message: " + message);
+
+			if(message.getSubject().toString().equalsIgnoreCase("DataRequest")){
+
+				Message loginWithServer=new Message("server@103.25.231.23",Message.Type.chat);
+				loginWithServer.setSubject("ProviderResponse");
+				loginWithServer.setBody(query2.toString());
+				connection.sendPacket(loginWithServer);
+			}
+			else if (message.getSubject().toString().equalsIgnoreCase("Final Confirmation"))
+			{				System.out.println("Received message: " + message);
+
+				connection.disconnect();
+				time=System.currentTimeMillis()-time;
+	            System.out.println("time taken "+username+" "+time);
+	            totalTime += time;
+	            totalCount++;
+	            connection.disconnect();
+	            System.out.println("\nTotalTime: " + totalTime + "\nTotalCount: " + totalCount + "\nAverage: " + ((totalTime*1.0)/totalCount));
+			}
+	        /*    System.out.println("disconnected "+username);
 	            	try {
 						connection.getAccountManager().deleteAccount();
 					} catch (XMPPException e) {
@@ -75,12 +99,15 @@ public class QueryClass extends Thread implements MessageListener{
 	            //}*/
 	        } 
     	 });
-     if(username.equals("user1")){
+     if(username.equals("username1")){
     	Message loginWithServer=new Message("server@103.25.231.23",Message.Type.chat);
 		loginWithServer.setSubject("Query");
 		loginWithServer.setBody(query.toString());
 		connection.sendPacket(loginWithServer);
 		}
+
+		while(connection.isConnected()){
+			Thread.sleep(50);}
 	}
     
     public void run(){
@@ -97,8 +124,20 @@ public class QueryClass extends Thread implements MessageListener{
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-    	
+        
+
+		while(connection.isConnected()){
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
         
 
     	
@@ -133,12 +172,11 @@ public class QueryClass extends Thread implements MessageListener{
     	QueryClass T1;
    
     // turn on the enhanced debugger
-    XMPPConnection.DEBUG_ENABLED = true;
-    for(int i=0;i<30 ;i++){
-    T1 = new QueryClass("user"+i,"1234");
+    //XMPPConnection.DEBUG_ENABLED = true;
+    for(int i=0;i<50 ;i++){
+    T1 = new QueryClass("username"+i,"1234");
     T1.start();}
    
    
     }
- 
 }
